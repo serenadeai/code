@@ -1,0 +1,281 @@
+$space-tiny: 5px;
+$space-small: 10px;
+$space-medium: 15px;
+$space-large: 20px;
+$space-huge: 40px;
+$space-massive: 80px;
+
+$font-size: 15px;
+$font-size-small: 14px;
+$font-size-tiny: 13px;
+
+$border-color: var(--vscode-pickerGroup-border);
+$button-background: var(--vscode-button-background);
+$button-background-hover: var(--vscode-button-hoverBackground);
+$button-foreground: var(--vscode-button-foreground);
+$error-color: var(--vscode-errorForeground);
+$success-color: var(--vscode-progressBar-background);
+$text-color: var(--vscode-foreground);
+
+.hidden {
+    display: none !important;
+}
+
+.success-color {
+    background-color: $success-color;
+    height: 1px;
+    width: 1px;
+}
+
+a,
+button,
+.btn {
+    cursor: pointer;
+}
+
+a:hover,
+a:focus {
+    text-decoration: none;
+}
+
+.btn {
+    background: $button-background;
+    border: solid 1px $border-color;
+    color: $button-foreground;
+    font-size: $font-size-small !important;
+    padding: $space-tiny $space-small;
+}
+
+input {
+    background: var(--vscode-input-background);
+    border: solid 1px $border-color;
+    color: var(--vscode-input-foreground);
+    font-size: $font-size-small !important;
+    padding: $space-tiny $space-small;
+}
+
+.btn:hover {
+    background: $button-background-hover;
+}
+
+.alternatives {
+    color: $text-color;
+
+    .alternatives-logo-container {
+        display: flex;
+        padding: $space-medium;
+
+        .alternatives-logo {
+            flex-grow: 2;
+
+            img {
+                width: 120px;
+            }
+        }
+
+        .alternatives-status {
+            font-family: system-ui;
+            font-size: $font-size-tiny;
+            margin-top: $space-small;
+        }
+    }
+
+    .alternatives-volume-container {
+        align-items: center;
+        display: flex;
+        padding: 0 $space-medium;
+
+        .alternatives-listen-controls {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .btn-listen {
+            border-right: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            display: block;
+        }
+
+        .btn-menu {
+            border-left: 0;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            display: block;
+            font-size: 10px;
+            outline: 0;
+            padding: 2px 8px;
+            position: relative;
+
+            i {
+                transition: transform 0.2s;
+            }
+
+            i.active {
+                transform: rotate(180deg) scaleX(-1);
+            }
+
+            .menu-dropdown {
+                background: $button-background;
+                border-top: none;
+                left: 0;
+                margin-top: $space-tiny;
+                opacity: 0;
+                position: absolute;
+                transition: opacity 0.2s;
+                z-index: 2;
+
+                &.active {
+                    opacity: 1;
+                }
+
+                a {
+                    border-bottom: 1px solid $border-color;
+                    color: $button-foreground;
+                    font-size: $font-size-tiny;
+                    display: block;
+                    padding: $space-small;
+                    text-align: left;
+                    text-decoration: none;
+
+                    &:hover,
+                    &:focus {
+                        background: $button-background-hover;
+                    }
+                }
+            }
+        }
+
+        .alternatives-bar-container {
+            flex-grow: 2;
+            border: 1px solid $border-color;
+            border-top: none;
+            margin-left: $space-small;
+            height: 6px;
+
+            .alternatives-bar {
+                height: 100%;
+                transition: width 0.2s;
+            }
+        }
+    }
+
+    .alternatives-token-container {
+        padding: $space-medium;
+        padding-top: 0;
+
+        a {
+            text-decoration: underline;
+        }
+
+        .alternatives-token-controls {
+            display: flex;
+            margin-bottom: $space-medium;
+            padding-top: 0;
+
+            .input-token {
+                flex-grow: 2;
+            }
+        }
+    }
+
+    .alternatives-header {
+        font-size: $font-size-small;
+        margin-left: $space-small;
+        margin-top: $space-large;
+    }
+
+    .alternatives-list {
+        margin-top: $space-small;
+    }
+
+    .alternative-row {
+        border-bottom: solid 1px $border-color;
+        color: $text-color;
+        display: block;
+        font-size: $font-size;
+        padding: $space-small;
+        position: relative;
+
+        &:first-child {
+            border-top: solid 1px $border-color;
+        }
+
+        &:last-child {
+            border: none;
+        }
+
+        &:hover {
+            background: $success-color;
+            text-decoration: none;
+        }
+
+        &.invalid {
+            color: $error-color;
+
+            .alternative-number {
+                border-color: $error-color;
+            }
+        }
+
+        &.suggestion {
+            color: $text-color;
+            cursor: default;
+            opacity: 0.5;
+        }
+
+        &.suggestion:hover {
+            background: inherit;
+        }
+
+        pre.inline {
+            display: inline;
+        }
+
+        .alternative-number,
+        .alternative-description {
+            display: inline-block;
+            font-family: system-ui;
+        }
+
+        .alternative-number {
+            $size: 14px;
+
+            border: solid 2px $text-color;
+            border-radius: 50%;
+            color: $text-color;
+            font-weight: 600;
+            line-height: 13px;
+            margin-right: $space-tiny;
+            min-height: $size;
+            min-width: $size;
+            padding: $space-tiny;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .alternative-description {
+            vertical-align: text-top;
+        }
+
+        .alternative-code {
+            display: block;
+            margin-top: $space-small;
+
+            pre {
+                font-size: $font-size-small;
+            }
+        }
+    }
+}
+
+.help {
+    width: 500px;
+    overflow: auto;
+
+    iframe {
+        border: none;
+        height: 100%;
+        width: 100%;
+    }
+}
