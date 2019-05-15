@@ -62,7 +62,8 @@ export default class AlternativesPanel {
             <i class="fas fa-chevron-down"></i>
             <div class="menu-dropdown hidden">
                 <a href="#" class="btn-clear">Clear</a>
-                <a href="#" class="btn-help">Help</a>
+                <a href="#" class="btn-guide">Guide</a>
+                <a href="#" class="btn-reference">Reference</a>
             </div>
         </div>
         </button>

@@ -182,10 +182,14 @@ const initialize = () => {
         }
     });
 
-    // toggle help state on help button click
-    document.querySelector('.btn-help').addEventListener('click', () => {
-        const help = getState('help');
-        vscode.postMessage({event: 'setState', key: 'help', value: !help});
+    // show guide panel
+    document.querySelector('.btn-guide').addEventListener('click', () => {
+        vscode.postMessage({event: 'showDocsPanel', url: 'https://docs.serenade.ai'});
+    });
+
+    // show reference panel
+    document.querySelector('.btn-reference').addEventListener('click', () => {
+        vscode.postMessage({event: 'showDocsPanel', url: 'https://docs.serenade.ai/docs/reference.html'});
     });
 
     // send clear command on clear button click
