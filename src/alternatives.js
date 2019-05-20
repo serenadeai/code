@@ -1,12 +1,22 @@
 const vscode = acquireVsCodeApi();
 let state = {};
 
+const $ = e => {
+    return document.querySelector(e);
+};
+
+const $$ = e => {
+    return document.querySelectorAll(e);
+};
+
 window.addEventListener('message', event => {
     if (event.data.event.startsWith('state:')) {
         const key = event.data.event.split(':')[1];
         state[key] = event.data.data;
         vscode.setState(state);
-        stateHandlers[key](event.data.data, event.data.previous);
+        if (key in stateHandlers) {
+            stateHandlers[key](event.data.data, event.data.previous);
+        }
     }
 });
 
@@ -19,21 +29,24 @@ const stateHandlers = {
                 if (data.type === 'files') {
                     header = 'No matching files found.';
                 }
-            }
-            else if (data.alternatives.length > 1) {
+            } else if (data.alternatives.length > 1) {
                 header = 'Did you mean';
             }
 
-            document.querySelector('.alternatives-header').innerHTML = header;
-            document.querySelector('.alternatives-list').innerHTML =
-                alternativeRows(data.alternatives, {truncate: data.type === 'files' ? 50 : false});
+            $('.alternatives-header').innerHTML = header;
+            $('.alternatives-list').innerHTML = alternativeRows(data.alternatives, {
+                truncate: data.type === 'files' ? 50 : false
+            });
         }
 
         // show suggestions if there aren't any alternatives
-        else if (!previous || (previous && 'alternatives' in previous)) {
+        else if (
+            getState('nuxCompleted') &&
+            (data.suggestions || !previous || (previous && 'alternatives' in previous))
+        ) {
             const suggestions = randomSuggestions(5);
-            document.querySelector('.alternatives-header').innerHTML = 'Try saying';
-            document.querySelector('.alternatives-list').innerHTML = suggestionRows(suggestions);
+            $('.alternatives-header').innerHTML = 'Try saying';
+            $('.alternatives-list').innerHTML = suggestionRows(suggestions);
         }
     },
 
@@ -43,50 +56,78 @@ const stateHandlers = {
             return;
         }
 
-        const rows = document.querySelectorAll('.alternatives-list .alternative-row:not(.invalid)');
+        const rows = $$('.alternatives-list .alternative-row:not(.invalid)');
         if (index < rows.length) {
             rows[index].classList.add('success-color-light');
         }
     },
 
-    status: (status, previous) => {
-        document.querySelector('.alternatives-status').innerHTML = status;
-        document.querySelector('.btn-listen').innerHTML = status === 'Listening' ? 'Pause' : 'Listen';
-        if (status === 'Paused') {
-            vscode.postMessage({event: 'setState', key: 'volume', value: 0});
+    listening: (on, previous) => {
+        $('.btn-listen').innerHTML = on ? 'Pause' : 'Listen';
+        if (!on) {
+            setState('volume', 0);
         }
     },
 
-    help: (visible, previous) => {
-        const text = visible ? 'Close Help' : 'Help'
-        document.querySelector('.btn-help').innerHTML = text;
+    nuxCompleted: (completed, previous) => {
+        if (completed) {
+            $('.nux').classList.add('hidden');
+            return;
+        }
+
+        setState('nuxStep', 0);
+        $('.nux').classList.remove('hidden');
+        $('.btn-nux-next').addEventListener('click', () => {
+            const stepIndex = getState('nuxStep');
+            if (stepIndex < nuxSteps().length - 1) {
+                setState('nuxStep', stepIndex + 1);
+            } else {
+                vscode.postMessage({ event: 'nuxCompleted' });
+                setState('nuxCompleted', true);
+                setState('alternatives', { suggestions: true });
+            }
+        });
+    },
+
+    nuxStep: (stepIndex, previous) => {
+        const steps = nuxSteps();
+        const step = steps[stepIndex];
+        $('.btn-nux-next').innerHTML = stepIndex === steps.length - 1 ? 'Close' : 'Next';
+        $('.nux-progress').style.width = Math.ceil((stepIndex / (steps.length - 1)) * 100) + '%';
+        $('.nux-heading').innerHTML = step.title;
+        $('.nux-body').innerHTML = step.body;
+    },
+
+    status: (status, previous) => {
+        $('.alternatives-status').innerHTML = status;
     },
 
     volume: (volume, previous) => {
         volume = volume || 0;
-        document.querySelector('.alternatives-bar').style.width = volume + '%';
+        $('.alternatives-bar').style.width = volume + '%';
     },
 
-    ready: (ready, previous) => {
+    loggedIn: (loggedIn, previous) => {
         document.body.classList.remove('hidden');
-        let $token = document.querySelector('.alternatives-token-container');
-        let $volume = document.querySelector('.alternatives-volume-container');
-        let $list = document.querySelector('.alternatives-list-container');
+        const $token = $('.alternatives-token-container');
+        const $volume = $('.alternatives-volume-container');
+        const $list = $('.alternatives-list-container');
+        const $nux = $('.nux');
 
-        if (ready === 'initializing') {
-            $token.classList.add('hidden');
-            $volume.classList.add('hidden');
-            $list.classList.add('hidden');
-        }
-        else if (ready === 'token') {
+        if (!loggedIn) {
             $token.classList.remove('hidden');
             $volume.classList.add('hidden');
             $list.classList.add('hidden');
-        }
-        else {
+            $nux.classList.add('hidden');
+            $('.alternatives-status').innerHTML = '';
+        } else {
             $token.classList.add('hidden');
             $volume.classList.remove('hidden');
             $list.classList.remove('hidden');
+
+            if (!getState('nuxCompleted')) {
+                $nux.classList.remove('hidden');
+            }
         }
     }
 };
@@ -98,12 +139,16 @@ const alternativeRows = (alternatives, options) => {
         // for invalid commands, show an X rather than a number
         let rowClass = '';
         let number = index.toString();
-        if (e.sequences && e.sequences.length === 1 && e.sequences[0].commands &&
-            e.sequences[0].commands.length === 1 && e.sequences[0].commands[0].type === 'COMMAND_TYPE_INVALID') {
+        if (
+            e.sequences &&
+            e.sequences.length === 1 &&
+            e.sequences[0].commands &&
+            e.sequences[0].commands.length === 1 &&
+            e.sequences[0].commands[0].type === 'COMMAND_TYPE_INVALID'
+        ) {
             number = '&times';
             rowClass = 'invalid';
-        }
-        else {
+        } else {
             allInvalid = false;
             index++;
         }
@@ -114,8 +159,7 @@ const alternativeRows = (alternatives, options) => {
             if (m.includes('\n')) {
                 newline = true;
                 return `<div class="alternative-code"><pre>${escape(m)}</pre></div>`;
-            }
-            else {
+            } else {
                 if (options && options.truncate !== false) {
                     m = truncate(m, options.truncate);
                 }
@@ -141,7 +185,8 @@ const escape = s => {
         return s;
     }
 
-    return s.replace(/&/g, '&amp;')
+    return s
+        .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
@@ -152,18 +197,38 @@ const getState = key => {
     return state[key];
 };
 
+const setState = (key, value) => {
+    vscode.postMessage({ event: 'setState', key: key, value: value });
+};
+
+const restoreState = () => {
+    const state = vscode.getState();
+    if (state) {
+        for (const key of Object.keys(state)) {
+            if (key in stateHandlers) {
+                stateHandlers[key](state[key], null);
+            }
+        }
+    }
+};
+
 const initialize = () => {
+    // show token input on login button click
+    $('.btn-login').addEventListener('click', () => {
+        $('.alternatives-login-buttons').classList.add('hidden');
+        $('.alternatives-token-controls-container').classList.remove('hidden');
+    });
+
     // toggle dropdown on dropdown button click
-    document.querySelector('.btn-menu').addEventListener('click', () => {
-        document.querySelector('.btn-menu i').classList.toggle('active');
-        let $dropdown = document.querySelector('.menu-dropdown');
+    $('.btn-menu').addEventListener('click', () => {
+        $('.btn-menu i').classList.toggle('active');
+        let $dropdown = $('.menu-dropdown');
         if ($dropdown.classList.contains('active')) {
             $dropdown.classList.toggle('active');
             setTimeout(() => {
                 $dropdown.classList.add('hidden');
             }, 200);
-        }
-        else {
+        } else {
             $dropdown.classList.remove('hidden');
             setTimeout(() => {
                 $dropdown.classList.toggle('active');
@@ -172,70 +237,65 @@ const initialize = () => {
     });
 
     // toggle listening state (managed by client) on listen button click
-    document.querySelector('.btn-listen').addEventListener('click', () => {
-        const status = getState('status');
-        if (status === 'Listening') {
-            vscode.postMessage({event: 'sendIPC', type: 'DISABLE_LISTENING'});
-        }
-        else {
-            vscode.postMessage({event: 'sendIPC', type: 'ENABLE_LISTENING'});
-        }
+    $('.btn-listen').addEventListener('click', () => {
+        const listening = getState('listening');
+        setState('listening', !listening);
+        vscode.postMessage({
+            event: 'sendIPC',
+            type: listening ? 'DISABLE_LISTENING' : 'ENABLE_LISTENING'
+        });
     });
 
     // show guide panel
-    document.querySelector('.btn-guide').addEventListener('click', () => {
-        vscode.postMessage({event: 'showDocsPanel', url: 'https://docs.serenade.ai'});
+    $('.btn-guide').addEventListener('click', () => {
+        vscode.postMessage({ event: 'showDocsPanel', url: 'https://docs.serenade.ai' });
     });
 
     // show reference panel
-    document.querySelector('.btn-reference').addEventListener('click', () => {
-        vscode.postMessage({event: 'showDocsPanel', url: 'https://docs.serenade.ai/docs/reference.html'});
+    $('.btn-reference').addEventListener('click', () => {
+        vscode.postMessage({ event: 'showDocsPanel', url: 'https://docs.serenade.ai/docs/reference.html' });
     });
 
     // send clear command on clear button click
-    document.querySelector('.btn-clear').addEventListener('click', () => {
-        vscode.postMessage({event: 'sendIPC', type: 'SEND_TEXT', data: {text: 'cancel'}});
+    $('.btn-clear').addEventListener('click', () => {
+        vscode.postMessage({ event: 'sendIPC', type: 'SEND_TEXT', data: { text: 'cancel' } });
     });
 
     // send use command on alternative click
-    document.querySelector('.alternatives-list').addEventListener('click', e => {
+    $('.alternatives-list').addEventListener('click', e => {
         let $row = e.target.closest('.alternative-row');
         if ($row.classList.contains('suggestion')) {
             return;
         }
 
         let index = $row.getAttribute('data-index');
-        vscode.postMessage({event: 'sendIPC', type: 'SEND_TEXT', data: {text: `use ${index}`}});
+        vscode.postMessage({ event: 'sendIPC', type: 'SEND_TEXT', data: { text: `use ${index}` } });
     });
 
     // save authentication token on save click
-    document.querySelector('.btn-token-save').addEventListener('click', () => {
-        vscode.postMessage({event: 'setToken', token: document.querySelector('.input-token').value});
-        vscode.postMessage({event: 'setState', key: 'ready', value: 'ready'});
-        vscode.postMessage({event: 'sendIPC', type: 'RELOAD_SETTINGS'});
+    $('.btn-token-save').addEventListener('click', () => {
+        vscode.postMessage({ event: 'setToken', token: $('.input-token').value });
+        vscode.postMessage({ event: 'sendIPC', type: 'RELOAD_SETTINGS' });
+        setState('loggedIn', true);
     });
-
-    const state = vscode.getState();
-    if (state) {
-        for (const key of Object.keys(state)) {
-            stateHandlers[key](state[key], null);
-        }
-    }
 
     // vscode supplies theme variables via CSS4 variables, which aren't compatible with SCSS color functions (yet).
     // some are supplied as hex values, and others are supplied as RGB triples, so we can't rely on parsing those.
     // so, we create elements with the desired colors, use getComputedStyle to return RGB, and manually perform
     // the color manipulations. this is kind of crazy.
     window.onload = () => {
-        const rgbSuccess = getComputedStyle(document.querySelector('.success-color'))['background-color'].match(/\d+/g);
-        document.querySelector('.success-color').style.display = 'none';
+        const rgbSuccess = getComputedStyle($('.success-color'))['background-color'].match(/\d+/g);
+        $('.success-color').style.display = 'none';
 
         let style = document.createElement('style');
         document.head.appendChild(style);
         style.sheet.insertRule(
-            `.success-color-light { background: rgba(${rgbSuccess[0]}, ${rgbSuccess[1]}, ${rgbSuccess[2]}, 0.4); }`, 0
+            `.success-color-light { background: rgba(${rgbSuccess[0]}, ${rgbSuccess[1]}, ${rgbSuccess[2]}, 0.4); }`,
+            0
         );
     };
+
+    restoreState();
 };
 
 const randomSuggestions = n => {
@@ -267,6 +327,78 @@ const truncate = (string, size) => {
     size -= '...'.length;
     size = Math.floor(size / 2);
     return string.substr(0, size) + '...' + string.substr(string.length - size);
+};
+
+const nuxSteps = () => {
+    return [
+        {
+            title: 'Welcome to Serenade!',
+            body: 'This guide will walk you through an introduction to Serenade.'
+        },
+        {
+            title: 'Setup',
+            body:
+                "You should keep Serenade open in a panel that's side-by-side with the code you're editing, " +
+                "since you'll need to see what's displayed here."
+        },
+        {
+            title: 'Tabs and alternatives',
+            body:
+                '<p>Start by pressing the Listen button above. Now, say "new tab" to create a new tab.</p>' +
+                "<p>You might see a list of alternatives appear on screen. This list appears when Serenade isn't " +
+                'exactly sure what you said. When it appears, you can say "clear" to clear the list and start over, ' +
+                'continue speaking a command, or say "use" followed by the number you want to select, like "use one" ' +
+                'or "use three".</p>'
+        },
+        {
+            title: 'Save',
+            body:
+                'Now, let\'s write some Python. First, say "save" to invoke the save dialog, then save the file ' +
+                'as hello.py.'
+        },
+        {
+            title: 'Add import',
+            body:
+                'Try saying "add import random" to add an import statement. Remember, you\'ll need to say ' +
+                '"use one" in order to run the command, or "clear" to try again.'
+        },
+        {
+            title: 'Undo',
+            body:
+                'If you accidentally select the wrong alternative, you can always say "undo" to go back. ' +
+                '"redo" also works.'
+        },
+        {
+            title: 'Add function',
+            body: 'Next, create a function by saying "add function get random", followed by a "use" command.'
+        },
+        {
+            title: 'Add parameter',
+            body:
+                'You can add a parameter called "number" to your function by saying "add parameter number", ' +
+                'followed by a "use" command.'
+        },
+        {
+            title: 'Add return',
+            body: 'Let\'s give the function a body. Say "add return 4" to add a return statement.'
+        },
+        {
+            title: 'Cursor movement',
+            body:
+                'You can move around the cursor with commands like "up", "next line", or "line one". ' +
+                'Try saying "line one".'
+        },
+        {
+            title: 'Deletion',
+            body: 'Now, to delete the import statement we added earlier, try saying "delete line".'
+        },
+        {
+            title: 'Learn more',
+            body:
+                "That's it for our introduction! As a next step, take a look at the " +
+                '<a href="https://docs.serenade.ai">Serenade guide</a> to learn more.'
+        }
+    ];
 };
 
 const suggestions = () => {

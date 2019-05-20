@@ -6,23 +6,22 @@ import LinuxRunner from './linux-runner';
 import MacRunner from './mac-runner';
 import WindowsRunner from './windows-runner';
 
-export default class ClientRunner {
+export default class ClientRunnerFactory {
     private state: StateManager;
     private settings: Settings;
-    runner: BaseRunner;
 
     constructor(state: StateManager, settings: Settings) {
         this.state = state;
         this.settings = settings;
+    }
 
+    get(): BaseRunner {
         if (process.platform === 'darwin') {
-            this.runner = new MacRunner(this.state, this.settings);
+            return new MacRunner(this.state, this.settings);
+        } else if (process.platform === 'win32') {
+            return new WindowsRunner(this.state, this.settings);
         }
-        else if (process.platform === 'win32') {
-            this.runner = new WindowsRunner(this.state, this.settings);
-        }
-        else {
-            this.runner = new LinuxRunner(this.state, this.settings);
-        }
+
+        return new LinuxRunner(this.state, this.settings);
     }
 }

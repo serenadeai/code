@@ -15,17 +15,20 @@ export function activate(context: vscode.ExtensionContext) {
         shown = true;
     };
 
-    context.subscriptions.push(vscode.commands.registerCommand('extension.serenadeEnable', () => {
-        show();
-    }));
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.serenadeEnable', () => {
+            show();
+        })
+    );
 
-    context.subscriptions.push(vscode.commands.registerCommand('extension.serenadeShowTranscriptInput', () => {
-        show();
-        vscode.window.showInputBox({placeHolder: 'Enter a Serenade command.'}).then(result => {
-            app.ipc!.send('SEND_TEXT', {text: result});
-        });
-    }));
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extension.serenadeShowTranscriptInput', () => {
+            show();
+            vscode.window.showInputBox({ placeHolder: 'Enter a Serenade command.' }).then(result => {
+                app.ipc!.send('SEND_TEXT', { text: result });
+            });
+        })
+    );
 }
 
-export function deactivate() {
-}
+export function deactivate() {}

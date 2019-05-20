@@ -7,7 +7,7 @@ export default class Settings {
     private loaded: boolean = false;
     private defaults: any = {
         disable_autostart: false,
-        ignore: ['\.git/', '\.gradle/', '\.pyc$', '\.class$', '\.jar$', '\.dylib$'],
+        ignore: ['.git/', '.gradle/', '.pyc$', '.class$', '.jar$', '.dylib$'],
         token: ''
     };
 
@@ -48,8 +48,8 @@ export default class Settings {
         fs.writeFileSync(this.file(), JSON.stringify(this.data));
     }
 
-    setToken(token: string) {
-        this.data.token = token;
+    set(key: string, value: any) {
+        this.data[key] = value;
         this.save();
     }
 }

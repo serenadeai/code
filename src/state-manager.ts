@@ -31,11 +31,11 @@ export default class StateManager {
 
         // forward state change to all webviews
         for (const webview of this.webviews) {
-            webview.postMessage({event: `state:${key}`, data: value, previous: previous});
+            webview.postMessage({ event: `state:${key}`, data: value, previous: previous });
         }
     }
 
-    subscribe(key: string, callback: Function) {
+    subscribe(key: string, callback: (value: any, previous: any) => void) {
         if (!(key in this.callbacks)) {
             this.callbacks[key] = [];
         }

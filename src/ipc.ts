@@ -12,17 +12,14 @@ export default class IPC {
         this.state = state;
         this.commandHandler = commandHandler;
 
-        this.state.subscribe('status', (status: string) => {
-            if (status === 'Paused') {
-                this.send('DISABLE_LISTENING');
-            }
+        this.state.subscribe('listening', (listening: any, _previous: any) => {
+            this.send(listening ? 'DISABLE_LISTENING' : 'ENABLE_LISTENING');
         });
     }
 
     async handle(response: any): Promise<any> {
-        // this.delegate.setCurrentEditor();
         if (response.alternatives) {
-            this.state.set('alternatives', {alternatives: response.alternatives});
+            this.state.set('alternatives', { alternatives: response.alternatives });
         }
 
         let result = null;
@@ -49,7 +46,7 @@ export default class IPC {
             port: 17373,
             path: '/',
             method: 'POST',
-            headers: {'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(json)}
+            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(json) }
         });
 
         request.write(json);
@@ -67,7 +64,7 @@ export default class IPC {
                 let parseResponse = JSON.parse(body);
                 let result = await this.handle(parseResponse);
                 if (!result) {
-                    result = {success: true};
+                    result = { success: true };
                 }
 
                 response.statusCode = 200;

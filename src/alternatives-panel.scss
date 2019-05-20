@@ -5,10 +5,12 @@ $space-large: 20px;
 $space-huge: 40px;
 $space-massive: 80px;
 
+$font-size-large: 18px;
 $font-size: 15px;
 $font-size-small: 14px;
 $font-size-tiny: 13px;
 
+$panel-background: var(--vscode-dropdown-background);
 $border-color: var(--vscode-pickerGroup-border);
 $button-background: var(--vscode-button-background);
 $button-background-hover: var(--vscode-button-hoverBackground);
@@ -25,6 +27,17 @@ $text-color: var(--vscode-foreground);
     background-color: $success-color;
     height: 1px;
     width: 1px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin: 0;
+    padding: 0;
 }
 
 a,
@@ -46,6 +59,21 @@ a:focus {
     padding: $space-tiny $space-small;
 }
 
+a.btn {
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+    text-decoration: none;
+}
+
+a.btn:hover {
+    color: $button-foreground;
+}
+
+body {
+    padding: 0;
+}
+
 input {
     background: var(--vscode-input-background);
     border: solid 1px $border-color;
@@ -58,213 +86,256 @@ input {
     background: $button-background-hover;
 }
 
-.alternatives {
-    color: $text-color;
+.alternatives-logo-container {
+    display: flex;
+    padding: $space-medium;
 
-    .alternatives-logo-container {
-        display: flex;
-        padding: $space-medium;
+    .alternatives-logo {
+        flex-grow: 2;
 
-        .alternatives-logo {
-            flex-grow: 2;
-
-            img {
-                width: 120px;
-            }
-        }
-
-        .alternatives-status {
-            font-family: system-ui;
-            font-size: $font-size-tiny;
-            margin-top: $space-small;
+        img {
+            width: 120px;
         }
     }
 
-    .alternatives-volume-container {
-        align-items: center;
-        display: flex;
-        padding: 0 $space-medium;
-
-        .alternatives-listen-controls {
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .btn-listen {
-            border-right: 0;
-            border-top-right-radius: 0;
-            border-bottom-right-radius: 0;
-            display: block;
-        }
-
-        .btn-menu {
-            border-left: 0;
-            border-top-left-radius: 0;
-            border-bottom-left-radius: 0;
-            display: block;
-            font-size: 10px;
-            outline: 0;
-            padding: 2px 8px;
-            position: relative;
-
-            i {
-                transition: transform 0.2s;
-            }
-
-            i.active {
-                transform: rotate(180deg) scaleX(-1);
-            }
-
-            .menu-dropdown {
-                background: $button-background;
-                border-top: none;
-                left: 0;
-                margin-top: $space-tiny;
-                opacity: 0;
-                position: absolute;
-                transition: opacity 0.2s;
-                z-index: 2;
-
-                &.active {
-                    opacity: 1;
-                }
-
-                a {
-                    border-bottom: 1px solid $border-color;
-                    color: $button-foreground;
-                    font-size: $font-size-tiny;
-                    display: block;
-                    padding: $space-small;
-                    text-align: left;
-                    text-decoration: none;
-
-                    &:hover,
-                    &:focus {
-                        background: $button-background-hover;
-                    }
-                }
-            }
-        }
-
-        .alternatives-bar-container {
-            flex-grow: 2;
-            border: 1px solid $border-color;
-            border-top: none;
-            margin-left: $space-small;
-            height: 6px;
-
-            .alternatives-bar {
-                height: 100%;
-                transition: width 0.2s;
-            }
-        }
-    }
-
-    .alternatives-token-container {
-        padding: $space-medium;
-        padding-top: 0;
-
-        a {
-            text-decoration: underline;
-        }
-
-        .alternatives-token-controls {
-            display: flex;
-            margin-bottom: $space-medium;
-            padding-top: 0;
-
-            .input-token {
-                flex-grow: 2;
-            }
-        }
-    }
-
-    .alternatives-header {
-        font-size: $font-size-small;
-        margin-left: $space-small;
-        margin-top: $space-large;
-    }
-
-    .alternatives-list {
+    .alternatives-status {
+        font-family: system-ui;
+        font-size: $font-size-tiny;
         margin-top: $space-small;
     }
+}
 
-    .alternative-row {
-        border-bottom: solid 1px $border-color;
-        color: $text-color;
+.alternatives-login-buttons {
+    .btn {
         display: block;
-        font-size: $font-size;
-        padding: $space-small;
+        margin-bottom: $space-small;
+        width: 100%;
+    }
+}
+
+.alternatives-volume-container {
+    align-items: center;
+    display: flex;
+    padding: 0 $space-medium;
+
+    .alternatives-listen-controls {
+        display: flex;
+        justify-content: space-around;
+    }
+
+    .btn-listen {
+        border-right: 0;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        display: block;
+
+        &:focus {
+            border-right: 0;
+        }
+    }
+
+    .btn-menu {
+        border-left: 0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        display: block;
+        font-size: 10px;
+        outline: 0;
+        padding: 2px 8px;
         position: relative;
 
-        &:first-child {
-            border-top: solid 1px $border-color;
+        i {
+            transition: transform 0.2s;
         }
 
-        &:last-child {
-            border: none;
+        i.active {
+            transform: rotate(180deg) scaleX(-1);
         }
 
-        &:hover {
-            background: $success-color;
-            text-decoration: none;
-        }
+        .menu-dropdown {
+            background: $button-background;
+            border-top: none;
+            left: 0;
+            margin-top: $space-tiny;
+            opacity: 0;
+            position: absolute;
+            transition: opacity 0.2s;
+            z-index: 2;
 
-        &.invalid {
-            color: $error-color;
+            &.active {
+                opacity: 1;
+            }
 
-            .alternative-number {
-                border-color: $error-color;
+            a {
+                border-bottom: 1px solid $border-color;
+                color: $button-foreground;
+                font-size: $font-size-tiny;
+                display: block;
+                padding: $space-small;
+                text-align: left;
+                text-decoration: none;
+
+                &:hover,
+                &:focus {
+                    background: $button-background-hover;
+                }
             }
         }
+    }
 
-        &.suggestion {
-            color: $text-color;
-            cursor: default;
-            opacity: 0.5;
-        }
+    .alternatives-bar-container {
+        flex-grow: 2;
+        border: 1px solid $border-color;
+        border-top: none;
+        margin-left: $space-small;
+        height: 6px;
 
-        &.suggestion:hover {
-            background: inherit;
+        .alternatives-bar {
+            height: 100%;
+            transition: width 0.2s;
         }
+    }
+}
 
-        pre.inline {
-            display: inline;
-        }
+.alternatives-token-container {
+    padding: $space-medium;
+    padding-top: 0;
 
-        .alternative-number,
-        .alternative-description {
-            display: inline-block;
-            font-family: system-ui;
+    .alternatives-token-text a {
+        text-decoration: underline;
+    }
+
+    .alternatives-token-controls {
+        display: flex;
+        margin-bottom: $space-medium;
+        padding-top: 0;
+
+        .input-token {
+            flex-grow: 2;
         }
+    }
+}
+
+.nux {
+    background: $panel-background;
+    border: solid 1px $border-color;
+    border-radius: $space-tiny;
+    padding: $space-tiny $space-small $space-small $space-small;
+    margin: $space-small;
+
+    p {
+        margin-bottom: 1em;
+    }
+
+    .nux-progress {
+        height: 2px;
+        width: 0%;
+        margin-bottom: 3px;
+    }
+
+    .nux-body {
+        font-size: $font-size-small;
+        margin-top: $space-tiny;
+    }
+
+    .btn-nux-next {
+        font-size: $font-size-tiny !important;
+        margin-top: $space-medium;
+    }
+}
+
+.alternatives-header {
+    font-size: $font-size-small;
+    margin-left: $space-small;
+    margin-top: $space-large;
+}
+
+.alternatives-list {
+    margin-top: $space-small;
+}
+
+.alternative-row {
+    border-bottom: solid 1px $border-color;
+    color: $text-color;
+    display: block;
+    font-size: $font-size;
+    padding: $space-small;
+    position: relative;
+
+    &:first-child {
+        border-top: solid 1px $border-color;
+    }
+
+    &:last-child {
+        border: none;
+    }
+
+    &:hover {
+        background: $success-color;
+        color: $text-color;
+        text-decoration: none;
+    }
+
+    &.invalid {
+        color: $error-color;
 
         .alternative-number {
-            $size: 14px;
-
-            border: solid 2px $text-color;
-            border-radius: 50%;
-            color: $text-color;
-            font-weight: 600;
-            line-height: 13px;
-            margin-right: $space-tiny;
-            min-height: $size;
-            min-width: $size;
-            padding: $space-tiny;
-            text-align: center;
-            vertical-align: middle;
+            border-color: $error-color;
+            color: $error-color;
         }
+    }
 
-        .alternative-description {
-            vertical-align: text-top;
+    &.suggestion {
+        color: $text-color;
+        cursor: default;
+        opacity: 0.5;
+    }
+
+    &.suggestion:hover {
+        background: inherit;
+    }
+
+    pre.inline {
+        display: inline;
+    }
+
+    .alternative-number,
+    .alternative-description {
+        display: inline-block;
+        font-family: system-ui;
+    }
+
+    .alternative-number {
+        $size: 14px;
+
+        border: solid 2px $text-color;
+        border-radius: 50%;
+        color: $text-color;
+        font-weight: 600;
+        line-height: 13px;
+        margin-right: $space-tiny;
+        min-height: $size;
+        min-width: $size;
+        padding: $space-tiny;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .alternative-description {
+        vertical-align: text-top;
+
+        pre {
+            margin-left: $space-tiny;
         }
+    }
 
-        .alternative-code {
-            display: block;
-            margin-top: $space-small;
+    .alternative-code {
+        display: block;
+        margin-top: $space-small;
 
-            pre {
-                font-size: $font-size-small;
-            }
+        pre {
+            font-size: $font-size-small;
+            margin-left: $space-tiny;
         }
     }
 }

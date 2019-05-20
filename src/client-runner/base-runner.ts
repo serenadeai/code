@@ -1,4 +1,4 @@
-import {ChildProcess, spawn} from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import * as decompress from 'decompress';
 import * as fs from 'fs';
 import * as http from 'http';
@@ -84,19 +84,17 @@ export default abstract class BaseRunner {
         mkdirp.sync(base);
 
         progress(request(url))
-            .on('progress',
-                (state: any) => {
-                    this.state.set('status', `${status} (${Math.floor(state.percent * 100)}%)\n`);
-                })
-            .on('end',
-                () => {
-                    decompress(archive, path.dirname(archive)).then(() => {
-                        fs.unlinkSync(archive);
-                        if (callback) {
-                            callback();
-                        }
-                    });
-                })
+            .on('progress', (state: any) => {
+                this.state.set('status', `${status} (${Math.floor(state.percent * 100)}%)\n`);
+            })
+            .on('end', () => {
+                decompress(archive, path.dirname(archive)).then(() => {
+                    fs.unlinkSync(archive);
+                    if (callback) {
+                        callback();
+                    }
+                });
+            })
             .pipe(fs.createWriteStream(archive));
     }
 
@@ -124,7 +122,7 @@ export default abstract class BaseRunner {
                             '-jar',
                             `"${this.settings.path()}/client/${this.clientVersion()}/serenade.jar"`
                         ],
-                        {cwd: `${this.settings.path()}/jdk/${this.jdkVersion()}/${this.javaPath()}`, shell: true}
+                        { cwd: `${this.settings.path()}/jdk/${this.jdkVersion()}/${this.javaPath()}`, shell: true }
                     );
 
                     this.clientProcess.stdout.on('data', this.log);
@@ -137,7 +135,11 @@ export default abstract class BaseRunner {
 
     installClient(callback: () => void) {
         this.downloadAndDecompress(
-            this.clientUrl(), this.clientVersion(), 'client/Serenade.tar.gz', 'Updating', callback
+            this.clientUrl(),
+            this.clientVersion(),
+            'client/Serenade.tar.gz',
+            'Updating',
+            callback
         );
     }
 
