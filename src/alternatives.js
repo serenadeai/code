@@ -64,6 +64,11 @@ const stateHandlers = {
 
     listening: (on, previous) => {
         $('.btn-listen').innerHTML = on ? 'Pause' : 'Listen';
+        if (on) {
+            $('.listening-indicator').classList.remove('hidden');
+        } else {
+            $('.listening-indicator').classList.add('hidden');
+        }
     },
 
     nuxCompleted: (completed, previous) => {

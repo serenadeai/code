@@ -47,6 +47,8 @@ export default class AlternativesPanel {
       <div class="alternatives-logo">
         <img src="vscode-resource:${this.root}/img/wordmark.png" />
       </div>
+      <div class="hidden listening-indicator"></div>
+      <div class="spacer"></div>
       <div class="alternatives-status"></div>
     </div>
     <div class="alternatives-token-container">

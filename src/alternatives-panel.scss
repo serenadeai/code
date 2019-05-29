@@ -19,6 +19,20 @@ $error-color: var(--vscode-errorForeground);
 $success-color: var(--vscode-progressBar-background);
 $text-color: var(--vscode-foreground);
 
+@keyframes flicker {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
 .hidden {
     display: none !important;
 }
@@ -89,19 +103,33 @@ input {
 .alternatives-logo-container {
     display: flex;
     padding: $space-medium;
+    align-items: center;
+    justify-content: center;
+
+    .listening-indicator {
+        animation: flicker 3s ease-in-out infinite;
+        background: $button-background;
+        border-radius: 8px;
+        height: 8px;
+        margin-left: $space-small;
+        margin-top: $space-tiny;
+        width: 8px;
+    }
 
     .alternatives-logo {
-        flex-grow: 2;
-
         img {
             width: 120px;
         }
     }
 
+    .spacer {
+        flex-grow: 2;
+    }
+
     .alternatives-status {
+        align-self: flex-end;
         font-family: system-ui;
         font-size: $font-size-tiny;
-        margin-top: $space-small;
     }
 }
 
