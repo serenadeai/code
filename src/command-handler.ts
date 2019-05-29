@@ -13,10 +13,11 @@ export default class CommandHandler {
         this.webviewPanel = webviewPanel;
     }
 
-    private focus() {
+    private async focus() {
         const index = this.webviewPanel.viewColumn;
         const column = index === 2 ? 'First' : 'Second';
         vscode.commands.executeCommand(`workbench.action.focus${column}EditorGroup`);
+        await this.uiDelay();
     }
 
     private openPendingFileAtIndex(index: number) {
@@ -64,7 +65,7 @@ export default class CommandHandler {
         return new Promise(resolve => {
             setTimeout(() => {
                 resolve();
-            }, 300);
+            }, 100);
         });
     }
 
@@ -112,6 +113,7 @@ export default class CommandHandler {
         if (!editor) {
             return;
         }
+
         const position = editor.selection.active;
         const row = position.line;
         const column = position.character;

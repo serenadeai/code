@@ -12,8 +12,12 @@ export default class IPC {
         this.state = state;
         this.commandHandler = commandHandler;
 
-        this.state.subscribe('listening', (listening: any, _previous: any) => {
-            this.send(listening ? 'DISABLE_LISTENING' : 'ENABLE_LISTENING');
+        this.state.subscribe('listening', (listening: any, previous: any) => {
+            if (listening === !!previous) {
+                return;
+            }
+
+            this.send(listening ? 'ENABLE_LISTENING' : 'DISABLE_LISTENING');
         });
     }
 
@@ -75,12 +79,7 @@ export default class IPC {
 
         this.server.once('error', (error: any) => {
             if (error.code === 'EADDRINUSE') {
-                console.error('Serenade is already running in another editor window.', {
-                    description:
-                        'Serenade only supports running in one window at a time for now. Close this window to use Serenade.',
-                    dismissable: false
-                });
-
+                console.error('Serenade is already running in another editor window.');
                 return;
             }
         });

@@ -64,9 +64,6 @@ const stateHandlers = {
 
     listening: (on, previous) => {
         $('.btn-listen').innerHTML = on ? 'Pause' : 'Listen';
-        if (!on) {
-            setState('volume', 0);
-        }
     },
 
     nuxCompleted: (completed, previous) => {
@@ -82,7 +79,6 @@ const stateHandlers = {
             if (stepIndex < nuxSteps().length - 1) {
                 setState('nuxStep', stepIndex + 1);
             } else {
-                vscode.postMessage({ event: 'nuxCompleted' });
                 setState('nuxCompleted', true);
                 setState('alternatives', { suggestions: true });
             }
@@ -238,12 +234,8 @@ const initialize = () => {
 
     // toggle listening state (managed by client) on listen button click
     $('.btn-listen').addEventListener('click', () => {
-        const listening = getState('listening');
+        const listening = !!getState('listening');
         setState('listening', !listening);
-        vscode.postMessage({
-            event: 'sendIPC',
-            type: listening ? 'DISABLE_LISTENING' : 'ENABLE_LISTENING'
-        });
     });
 
     // show guide panel
@@ -274,9 +266,9 @@ const initialize = () => {
 
     // save authentication token on save click
     $('.btn-token-save').addEventListener('click', () => {
-        vscode.postMessage({ event: 'setToken', token: $('.input-token').value });
-        vscode.postMessage({ event: 'sendIPC', type: 'RELOAD_SETTINGS' });
+        setState('token', $('.input-token').value);
         setState('loggedIn', true);
+        vscode.postMessage({ event: 'sendIPC', type: 'RELOAD_SETTINGS' });
     });
 
     // vscode supplies theme variables via CSS4 variables, which aren't compatible with SCSS color functions (yet).

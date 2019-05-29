@@ -23,14 +23,10 @@ export default class App {
     }
 
     handleMessage(message: any) {
-        if (message.event === 'nuxCompleted') {
-            this.settings!.set('nux_completed', true);
-        } else if (message.event === 'sendIPC') {
+        if (message.event === 'sendIPC') {
             this.ipc!.send(message.type, message.data);
         } else if (message.event === 'setState') {
             this.state!.set(message.key, message.value);
-        } else if (message.event === 'setToken') {
-            this.settings!.set('token', message.token);
         } else if (message.event === 'showDocsPanel') {
             // don't show the same panel multiple times
             if (!this.state!.get(`docs-${message.url}`)) {
@@ -61,7 +57,11 @@ export default class App {
             'serenade',
             'Serenade',
             vscode.ViewColumn.Two,
-            { enableScripts: true, localResourceRoots: [vscode.Uri.file(root)], retainContextWhenHidden: true }
+            {
+                enableScripts: true,
+                localResourceRoots: [vscode.Uri.file(root)],
+                retainContextWhenHidden: true
+            }
         );
 
         this.state = new StateManager([alternativesWebviewPanel.webview]);
@@ -84,11 +84,20 @@ export default class App {
             this.context.subscriptions
         );
 
+        this.state.subscribe('nuxCompleted', (completed: any, _previous: any) => {
+            this.settings!.set('nux_completed', completed);
+        });
+
+        this.state.subscribe('token', (token: any, _previous: any) => {
+            this.settings!.set('token', token);
+        });
+
         this.state.set('loggedIn', true);
         this.state.set('nuxCompleted', this.settings.get('nux_completed'));
         this.state.set('alternatives', {});
         this.state.set('volume', 0);
         this.state.set('listening', false);
+        this.state.set('status', 'Paused');
         this.ipc.start();
 
         this.clientRunner.installAndRun(() => {
