@@ -244,41 +244,15 @@ input {
     }
 }
 
-.nux {
-    background: $panel-background;
-    border: solid 1px $border-color;
-    border-radius: $space-tiny;
-    padding: $space-tiny $space-small $space-small $space-small;
-    margin: $space-small;
-
-    p {
-        margin-bottom: 1em;
-    }
-
-    .nux-progress {
-        height: 2px;
-        width: 0%;
-        margin-bottom: 3px;
-    }
-
-    .nux-body {
-        font-size: $font-size-small;
-        margin-top: $space-tiny;
-    }
-
-    .btn-nux-next {
-        font-size: $font-size-tiny !important;
-        margin-top: $space-medium;
-    }
-}
-
-.alternatives-header {
+.alternatives-valid-header,
+.alternatives-invalid-header {
     font-size: $font-size-small;
     margin-left: $space-small;
     margin-top: $space-large;
 }
 
-.alternatives-list {
+.alternatives-valid-list,
+.alternatives-invalid-list {
     margin-top: $space-small;
 }
 
@@ -290,18 +264,21 @@ input {
     padding: $space-small;
     position: relative;
 
-    &:first-child {
-        border-top: solid 1px $border-color;
+    &:not(.invalid):not(.success-color-light):hover {
+        color: $success-color;
+
+        .alternative-number {
+            border-color: $success-color;
+            color: $success-color;
+        }
     }
 
     &:last-child {
         border: none;
     }
 
-    &:hover {
-        background: $success-color;
-        color: $text-color;
-        text-decoration: none;
+    &:first-child {
+        border-top: solid 1px $border-color;
     }
 
     &.invalid {
@@ -314,13 +291,17 @@ input {
     }
 
     &.suggestion {
-        color: $text-color;
-        cursor: default;
         opacity: 0.5;
     }
 
     &.suggestion:hover {
         background: inherit;
+    }
+
+    &.suggestion,
+    &.success-color-light:hover {
+        color: $text-color;
+        cursor: default;
     }
 
     pre.inline {
@@ -365,6 +346,34 @@ input {
             font-size: $font-size-small;
             margin-left: $space-tiny;
         }
+    }
+}
+
+.nux {
+    background: $panel-background;
+    border: solid 1px $border-color;
+    border-radius: $space-tiny;
+    padding: $space-tiny $space-small $space-small $space-small;
+    margin: $space-small;
+
+    p {
+        margin-bottom: 1em;
+    }
+
+    .nux-progress {
+        height: 2px;
+        width: 0%;
+        margin-bottom: 3px;
+    }
+
+    .nux-body {
+        font-size: $font-size-small;
+        margin-top: $space-tiny;
+    }
+
+    .btn-nux-next {
+        font-size: $font-size-tiny !important;
+        margin-top: $space-medium;
     }
 }
 

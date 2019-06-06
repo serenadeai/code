@@ -27,16 +27,45 @@ const stateHandlers = {
             let header = '';
             if (data.alternatives.length === 0) {
                 if (data.type === 'files') {
-                    header = 'No matching files found.';
+                    header = 'No matching files found';
                 }
             } else if (data.alternatives.length > 1) {
                 header = 'Did you mean';
             }
 
-            $('.alternatives-header').innerHTML = header;
-            $('.alternatives-list').innerHTML = alternativeRows(data.alternatives, {
-                truncate: data.type === 'files' ? 50 : false
+            const validRows = alternativeRows(data.alternatives, {
+                truncate: data.type === 'files' ? 50 : false,
+                validOnly: true
             });
+
+            const $valid = $('.alternatives-valid');
+            if (validRows.length > 0) {
+                let header = '';
+                if (data.type === 'files') {
+                    header = validRows.length > 1 ? 'Select a file' : 'Opened';
+                } else {
+                    header = validRows.length > 1 ? 'Select a command' : 'Ran command';
+                }
+
+                $valid.classList.remove('hidden');
+                $('.alternatives-valid-header').innerHTML = header;
+                $('.alternatives-valid-list').innerHTML = validRows.join('');
+            } else {
+                $valid.classList.add('hidden');
+            }
+
+            const invalidRows = alternativeRows(data.alternatives, {
+                invalidOnly: true
+            });
+
+            const $invalid = $('.alternatives-invalid');
+            if (invalidRows.length > 0) {
+                $invalid.classList.remove('hidden');
+                $('.alternatives-invalid-header').innerHTML = 'Invalid commands';
+                $('.alternatives-invalid-list').innerHTML = invalidRows.join('');
+            } else {
+                $invalid.classList.add('hidden');
+            }
         }
 
         // show suggestions if there aren't any alternatives
@@ -45,8 +74,8 @@ const stateHandlers = {
             (data.suggestions || !previous || (previous && 'alternatives' in previous))
         ) {
             const suggestions = randomSuggestions(5);
-            $('.alternatives-header').innerHTML = 'Try saying';
-            $('.alternatives-list').innerHTML = suggestionRows(suggestions);
+            $('.alternatives-valid-header').innerHTML = 'Try saying';
+            $('.alternatives-valid-list').innerHTML = suggestionRows(suggestions);
         }
     },
 
@@ -56,7 +85,7 @@ const stateHandlers = {
             return;
         }
 
-        const rows = $$('.alternatives-list .alternative-row:not(.invalid)');
+        const rows = $$('.alternatives-valid-list .alternative-row:not(.invalid)');
         if (index < rows.length) {
             rows[index].classList.add('success-color-light');
         }
@@ -134,51 +163,55 @@ const stateHandlers = {
 };
 
 const alternativeRows = (alternatives, options) => {
-    let allInvalid = true;
     let index = 1;
-    let rows = alternatives.map((e, i) => {
-        // for invalid commands, show an X rather than a number
-        let rowClass = '';
-        let number = index.toString();
-        if (
-            e.sequences &&
-            e.sequences.length === 1 &&
-            e.sequences[0].commands &&
-            e.sequences[0].commands.length === 1 &&
-            e.sequences[0].commands[0].type === 'COMMAND_TYPE_INVALID'
-        ) {
-            number = '&times';
-            rowClass = 'invalid';
-        } else {
-            allInvalid = false;
-            index++;
-        }
-
-        // replace code markup with appropriate HTML
-        let newline = false;
-        let description = e.description.replace(/<code>([\s\S]+)<\/code>/g, (s, m) => {
-            if (m.includes('\n')) {
-                newline = true;
-                return `<div class="alternative-code"><pre>${escape(m)}</pre></div>`;
-            } else {
-                if (options && options.truncate !== false) {
-                    m = truncate(m, options.truncate);
+    return alternatives
+        .map((e, i) => {
+            // for invalid commands, show an X rather than a number
+            let rowClass = '';
+            let number = index.toString();
+            if (
+                e.sequences &&
+                e.sequences.length === 1 &&
+                e.sequences[0].commands &&
+                e.sequences[0].commands.length === 1 &&
+                e.sequences[0].commands[0].type === 'COMMAND_TYPE_INVALID'
+            ) {
+                number = '&times';
+                rowClass = 'invalid';
+                if (options.validOnly) {
+                    return null;
                 }
-
-                return ` <pre class="inline">${escape(m)}</pre>`;
+            } else {
+                index++;
+                if (options.invalidOnly) {
+                    return null;
+                }
             }
-        });
 
-        return `
+            // replace code markup with appropriate HTML
+            let newline = false;
+            let description = e.description.replace(/<code>([\s\S]+)<\/code>/g, (s, m) => {
+                if (m.includes('\n')) {
+                    newline = true;
+                    return `<div class="alternative-code"><pre>${escape(m)}</pre></div>`;
+                } else {
+                    if (options && options.truncate !== false) {
+                        m = truncate(m, options.truncate);
+                    }
+
+                    return ` <pre class="inline">${escape(m)}</pre>`;
+                }
+            });
+
+            return `
 <a class="alternative-row ${rowClass}" data-index="${number}">
     <div class="alternative-number">
         ${number}
     </div>
     <div class="alternative-description ${newline ? 'has-newline' : ''}">${description}</div>
 </a>`;
-    });
-
-    return rows.join('');
+        })
+        .filter(e => e !== null);
 };
 
 const escape = s => {
@@ -259,7 +292,7 @@ const initialize = () => {
     });
 
     // send use command on alternative click
-    $('.alternatives-list').addEventListener('click', e => {
+    $('.alternatives-valid-list').addEventListener('click', e => {
         let $row = e.target.closest('.alternative-row');
         if ($row.classList.contains('suggestion')) {
             return;

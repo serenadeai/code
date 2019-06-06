@@ -74,19 +74,19 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         await this.uiDelay();
     }
 
     async COMMAND_TYPE_CLOSE_WINDOW(_data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         await this.uiDelay();
     }
 
     async COMMAND_TYPE_COPY(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         if (data && data.text) {
             vscode.env.clipboard.writeText(data.text);
         }
@@ -95,20 +95,20 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_CREATE_TAB(_data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
         await this.uiDelay();
     }
 
     async COMMAND_TYPE_DIFF(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         this.setSourceAndCursor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
         let result = { source: '', cursor: 0, filename: '' };
 
-        this.focus();
+        await this.focus();
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -148,13 +148,13 @@ export default class CommandHandler {
     async COMMAND_TYPE_INVALID(_data: any): Promise<any> {}
 
     async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand('workbench.action.nextEditor');
         await this.uiDelay();
     }
 
     async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         const path = (data.path as string).replace(' ', '*');
         vscode.workspace
             .findFiles(`*${path}*`, '{**/node_modules/**,*.class,*.jar,**/__pycache__/**}', 10)
@@ -188,7 +188,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_PASTE(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -256,7 +256,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand('workbench.action.previousEditor');
         await this.uiDelay();
     }
@@ -266,7 +266,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand('workbench.action.files.save');
     }
 
@@ -280,7 +280,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         const direction = data.direction.toLowerCase();
         const split = direction.charAt(0).toUpperCase() + direction.slice(1);
         vscode.commands.executeCommand(`workbench.action.${split}`);
@@ -288,7 +288,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
         await this.uiDelay();
     }
@@ -307,7 +307,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_WINDOW(data: any): Promise<any> {
-        this.focus();
+        await this.focus();
         const direction = data.direction.toLowerCase();
         const split = direction.charAt(0).toUpperCase() + direction.slice(1);
         vscode.commands.executeCommand(`workspace.action.focus${split}Group`);

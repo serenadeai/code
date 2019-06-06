@@ -90,8 +90,14 @@ export default class AlternativesPanel {
       <button class="btn btn-nux-next">Next</button>
     </div>
     <div class="alternatives-list-container">
-      <div class="alternatives-header"></div>
-      <div class="alternatives-list"></div>
+      <div class="alternatives-valid">
+        <div class="alternatives-valid-header"></div>
+        <div class="alternatives-valid-list"></div>
+      </div>
+      <div class="alternatives-invalid">
+        <div class="alternatives-invalid-header"></div>
+        <div class="alternatives-invalid-list"></div>
+      </div>
     </div>
     <script src="vscode-resource:${this.root}/src/alternatives.js"></script>
   </body>
