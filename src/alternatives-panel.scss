@@ -264,7 +264,7 @@ input {
     padding: $space-small;
     position: relative;
 
-    &:not(.invalid):not(.success-color-light):hover {
+    &:not(.invalid):not(.success-color-light):not(.suggestion):hover {
         color: $success-color;
 
         .alternative-number {

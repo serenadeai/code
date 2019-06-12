@@ -145,6 +145,11 @@ export default class CommandHandler {
         return result;
     }
 
+    async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
+        await this.focus();
+        vscode.commands.executeCommand('editor.action.revealDefinition');
+    }
+
     async COMMAND_TYPE_INVALID(_data: any): Promise<any> {}
 
     async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
