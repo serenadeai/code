@@ -189,9 +189,9 @@ const alternativeRows = (alternatives, options) => {
             }
 
             // replace code markup with appropriate HTML
-            let newline = false;
+            let newline = e.sequences.some(s => s.commands.some(c => c.type === 'COMMAND_TYPE_SNIPPET'));
             let description = e.description.replace(/<code>([\s\S]+)<\/code>/g, (s, m) => {
-                if (m.includes('\n')) {
+                if (m.includes('\n') || newline) {
                     newline = true;
                     return `<div class="alternative-code"><pre>${escape(m)}</pre></div>`;
                 } else {
@@ -204,11 +204,15 @@ const alternativeRows = (alternatives, options) => {
             });
 
             return `
-<a class="alternative-row ${rowClass}" data-index="${number}">
-    <div class="alternative-number">
-        ${number}
+<a class="alternative-row ${rowClass} ${newline ? 'has-newline' : ''}" data-index="${number}">
+    <div class="alternative-row-inner">
+        <div class="alternative-number">
+            <div class="alternative-number-inner">
+                ${number}
+            </div>
+        </div>
+        <div class="alternative-description">${description}</div>
     </div>
-    <div class="alternative-description ${newline ? 'has-newline' : ''}">${description}</div>
 </a>`;
         })
         .filter(e => e !== null);

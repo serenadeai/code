@@ -158,6 +158,11 @@ export default class CommandHandler {
         await this.uiDelay();
     }
 
+    async COMMAND_TYPE_SNIPPET(data: any): Promise<any> {
+        await this.focus();
+        this.setSourceAndCursor(data.source, data.cursor);
+    }
+
     async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
         await this.focus();
         const path = (data.path as string).replace(' ', '*');

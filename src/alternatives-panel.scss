@@ -5,7 +5,7 @@ $space-large: 20px;
 $space-huge: 40px;
 $space-massive: 80px;
 
-$font-size-large: 18px;
+$font-size-large: 16px;
 $font-size: 15px;
 $font-size-small: 14px;
 $font-size-tiny: 13px;
@@ -65,25 +65,6 @@ a:focus {
     text-decoration: none;
 }
 
-.btn {
-    background: $button-background;
-    border: solid 1px $border-color;
-    color: $button-foreground;
-    font-size: $font-size-small !important;
-    padding: $space-tiny $space-small;
-}
-
-a.btn {
-    padding-left: 0;
-    padding-right: 0;
-    text-align: center;
-    text-decoration: none;
-}
-
-a.btn:hover {
-    color: $button-foreground;
-}
-
 body {
     padding: 0;
 }
@@ -96,8 +77,33 @@ input {
     padding: $space-tiny $space-small;
 }
 
+pre {
+    font-family: var(--vscode-editor-font-family);
+    font-weight: var(--vscode-editor-font-weight);
+    font-size: $font-size-large;
+}
+
+.btn {
+    background: $button-background;
+    border: solid 1px $border-color;
+    color: $button-foreground;
+    font-size: $font-size-small !important;
+    padding: $space-tiny $space-small;
+}
+
 .btn:hover {
     background: $button-background-hover;
+}
+
+a.btn {
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+    text-decoration: none;
+}
+
+a.btn:hover {
+    color: $button-foreground;
 }
 
 .alternatives-logo-container {
@@ -262,16 +268,6 @@ input {
     display: block;
     font-size: $font-size;
     padding: $space-small;
-    position: relative;
-
-    &:not(.invalid):not(.success-color-light):not(.suggestion):hover {
-        color: $success-color;
-
-        .alternative-number {
-            border-color: $success-color;
-            color: $success-color;
-        }
-    }
 
     &:last-child {
         border: none;
@@ -304,48 +300,70 @@ input {
         cursor: default;
     }
 
-    pre.inline {
-        display: inline;
+    &:not(.invalid):not(.success-color-light):not(.suggestion):hover {
+        color: $success-color;
+
+        .alternative-number {
+            border-color: $success-color;
+            color: $success-color;
+        }
     }
 
-    .alternative-number,
-    .alternative-description {
-        display: inline-block;
-        font-family: system-ui;
-    }
+    .alternative-row-inner {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
 
+        .alternative-number {
+            $size: 16px;
+
+            border: solid 2px $text-color;
+            border-radius: 50%;
+            color: $text-color;
+            font-weight: 600;
+            margin-right: $space-small;
+            min-height: $size;
+            min-width: $size;
+            padding: 4px;
+            text-align: center;
+
+            .alternative-number-inner {
+                // required to center the number in the container
+                line-height: $size - 1px;
+            }
+        }
+
+        .alternative-description {
+            // compensate for the (line-height - 1px) in the number
+            margin-top: -1px;
+            flex-grow: 2;
+            overflow: scroll;
+
+            pre.inline {
+                display: inline;
+                margin: 0;
+                margin-left: $space-tiny;
+            }
+
+            .alternative-code {
+                display: block;
+                margin-top: $space-small;
+
+                pre {
+                    margin: 0;
+                }
+            }
+        }
+    }
+}
+
+.alternative-row.has-newline {
     .alternative-number {
-        $size: 14px;
-
-        border: solid 2px $text-color;
-        border-radius: 50%;
-        color: $text-color;
-        font-weight: 600;
-        line-height: 13px;
-        margin-right: $space-tiny;
-        min-height: $size;
-        min-width: $size;
-        padding: $space-tiny;
-        text-align: center;
-        vertical-align: middle;
+        align-self: flex-start;
     }
 
     .alternative-description {
-        vertical-align: text-top;
-
-        pre {
-            margin-left: $space-tiny;
-        }
-    }
-
-    .alternative-code {
-        display: block;
-        margin-top: $space-small;
-
-        pre {
-            font-size: $font-size-small;
-            margin-left: $space-tiny;
-        }
+        margin-top: 2px;
     }
 }
 
