@@ -281,8 +281,8 @@ a.btn:hover {
         color: $error-color;
 
         .alternative-number {
-            border-color: $error-color;
-            color: $error-color;
+            border-color: $error-color !important;
+            color: $error-color !important;
         }
     }
 
@@ -337,7 +337,7 @@ a.btn:hover {
             // compensate for the (line-height - 1px) in the number
             margin-top: -1px;
             flex-grow: 2;
-            overflow: scroll;
+            overflow: auto;
 
             pre.inline {
                 display: inline;

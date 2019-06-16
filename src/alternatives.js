@@ -40,15 +40,9 @@ const stateHandlers = {
 
             const $valid = $('.alternatives-valid');
             if (validRows.length > 0) {
-                let header = '';
-                if (data.type === 'files') {
-                    header = validRows.length > 1 ? 'Select a file' : 'Opened';
-                } else {
-                    header = validRows.length > 1 ? 'Select a command' : 'Ran command';
-                }
-
                 $valid.classList.remove('hidden');
-                $('.alternatives-valid-header').innerHTML = header;
+                $('.alternatives-valid-header').innerHTML =
+                    data.type === 'files' ? 'Select a file' : 'Select a command';
                 $('.alternatives-valid-list').innerHTML = validRows.join('');
             } else {
                 $valid.classList.add('hidden');
@@ -73,9 +67,13 @@ const stateHandlers = {
             getState('nuxCompleted') &&
             (data.suggestions || !previous || (previous && 'alternatives' in previous))
         ) {
-            const suggestions = randomSuggestions(5);
+            $('.alternatives-valid').classList.remove('hidden');
             $('.alternatives-valid-header').innerHTML = 'Try saying';
-            $('.alternatives-valid-list').innerHTML = suggestionRows(suggestions);
+            $('.alternatives-valid-list').innerHTML = suggestionRows(randomSuggestions(5));
+
+            $('.alternatives-invalid').classList.add('hidden');
+            $('.alternatives-invalid-header').innerHTML = '';
+            $('.alternatives-invalid-list').innerHTML = '';
         }
     },
 

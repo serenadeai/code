@@ -57,8 +57,9 @@ export default class CommandHandler {
             );
 
             edit.replace(textRange, source);
-            editor.selections = [new vscode.Selection(row, column, row, column)];
         });
+
+        editor.selections = [new vscode.Selection(row, column, row, column)];
     }
 
     private async uiDelay() {
@@ -70,7 +71,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_CANCEL(_data: any): Promise<any> {
-        this.state.set('alternatives', {});
+        this.state.set('alternatives', { suggestions: true });
     }
 
     async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
