@@ -2,11 +2,13 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import StateManager from './state-manager';
+import IPC from './ipc';
 
 export default class CommandHandler {
     private state: StateManager;
     private webviewPanel: vscode.WebviewPanel;
     private pendingFiles: vscode.Uri[] = [];
+    public ipc?: IPC;
 
     constructor(state: StateManager, webviewPanel: vscode.WebviewPanel) {
         this.state = state;
@@ -159,11 +161,6 @@ export default class CommandHandler {
         await this.uiDelay();
     }
 
-    async COMMAND_TYPE_SNIPPET(data: any): Promise<any> {
-        await this.focus();
-        this.setSourceAndCursor(data.source, data.cursor);
-    }
-
     async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
         await this.focus();
         const path = (data.path as string).replace(' ', '*');
@@ -288,6 +285,16 @@ export default class CommandHandler {
         }
 
         this.state.set('status', text);
+    }
+
+    async COMMAND_TYPE_SNIPPET(data: any): Promise<any> {
+        this.state.set('loading', true);
+        this.ipc!.send('SEND_TEXT', { text: 'add executed snippet ' + data.text });
+    }
+
+    async COMMAND_TYPE_SNIPPET_EXECUTED(data: any): Promise<any> {
+        await this.focus();
+        this.setSourceAndCursor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_SPLIT(data: any): Promise<any> {

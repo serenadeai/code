@@ -69,6 +69,7 @@ export default class App {
         this.clientRunner = new ClientRunnerFactory(this.state, this.settings).get();
         const commandHandler = new CommandHandler(this.state, alternativesWebviewPanel);
         this.ipc = new IPC(this.state, commandHandler);
+        commandHandler.ipc = this.ipc;
 
         alternativesWebviewPanel.webview.html = alternativesPanel.html();
         alternativesWebviewPanel.onDidDispose(() => {

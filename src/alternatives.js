@@ -89,6 +89,13 @@ const stateHandlers = {
         }
     },
 
+    loading: (on, previous) => {
+        if (on) {
+            $('.alternatives-valid-header').innerHTML =
+                '<div class="lds-ring"><div></div><div></div><div></div><div></div></div>Loading...';
+        }
+    },
+
     listening: (on, previous) => {
         $('.btn-listen').innerHTML = on ? 'Pause' : 'Listen';
         if (on) {
@@ -187,7 +194,7 @@ const alternativeRows = (alternatives, options) => {
             }
 
             // replace code markup with appropriate HTML
-            let newline = e.sequences.some(s => s.commands.some(c => c.type === 'COMMAND_TYPE_SNIPPET'));
+            let newline = e.sequences.some(s => s.commands.some(c => c.type === 'COMMAND_TYPE_SNIPPET_EXECUTED'));
             let description = e.description.replace(/<code>([\s\S]+)<\/code>/g, (s, m) => {
                 if (m.includes('\n') || newline) {
                     newline = true;
@@ -205,9 +212,7 @@ const alternativeRows = (alternatives, options) => {
 <a class="alternative-row ${rowClass} ${newline ? 'has-newline' : ''}" data-index="${number}">
     <div class="alternative-row-inner">
         <div class="alternative-number">
-            <div class="alternative-number-inner">
-                ${number}
-            </div>
+            <div class="alternative-number-inner">${number}</div>
         </div>
         <div class="alternative-description">${description}</div>
     </div>
