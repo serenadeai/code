@@ -4,7 +4,6 @@ import * as os from 'os';
 
 export default class Settings {
     private data: any = {};
-    private loaded: boolean = false;
     private defaults: any = {
         disable_autostart: false,
         ignore: ['.git/', '.gradle/', '.pyc$', '.class$', '.jar$', '.dylib$'],
@@ -16,18 +15,15 @@ export default class Settings {
     }
 
     private load(): void {
-        if (this.loaded) {
-            return;
-        }
-
         this.data = {};
         mkdirp.sync(this.path());
         if (!fs.existsSync(this.file())) {
             return;
         }
 
-        this.data = JSON.parse(fs.readFileSync(this.file()).toString());
-        this.loaded = true;
+        try {
+            this.data = JSON.parse(fs.readFileSync(this.file()).toString());
+        } catch (error) {}
     }
 
     get(key: string): any {
@@ -49,6 +45,7 @@ export default class Settings {
     }
 
     set(key: string, value: any) {
+        this.load();
         this.data[key] = value;
         this.save();
     }

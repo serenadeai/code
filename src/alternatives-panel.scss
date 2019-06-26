@@ -180,11 +180,37 @@ a.btn:hover {
     }
 }
 
-.alternatives-login-buttons {
-    .btn {
-        display: block;
+.alternatives-login-container {
+    margin: 0 $space-large;
+
+    .alternatives-pre-login-buttons,
+    .alternatives-login,
+    .alternatives-register {
+        input[type='text'],
+        input[type='email'],
+        input[type='password'] {
+            display: block;
+            margin-bottom: $space-tiny;
+            width: calc(100% - 22px);
+        }
+
+        .btn-login-alt {
+            display: block;
+            margin-top: $space-tiny;
+        }
+    }
+
+    .alternatives-pre-login-buttons {
+        .btn {
+            display: block;
+            margin-bottom: 1px;
+            height: 36px;
+            width: 100%;
+        }
+    }
+
+    .login-error {
         margin-bottom: $space-small;
-        width: 100%;
     }
 }
 

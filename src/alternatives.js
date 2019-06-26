@@ -85,6 +85,7 @@ const stateHandlers = {
 
         const rows = $$('.alternatives-valid-list .alternative-row:not(.invalid)');
         if (index < rows.length) {
+            $('.alternatives-valid-header').innerHTML = 'Ran command';
             rows[index].classList.add('success-color-light');
         }
     },
@@ -94,6 +95,13 @@ const stateHandlers = {
             $('.alternatives-valid-header').innerHTML =
                 '<div class="lds-ring"><div></div><div></div><div></div><div></div></div>Loading...';
         }
+    },
+
+    loginError: (error, previous) => {
+        $$('.login-error').forEach(e => {
+            e.classList.remove('hidden');
+            e.innerHTML = error;
+        });
     },
 
     listening: (on, previous) => {
@@ -144,19 +152,19 @@ const stateHandlers = {
 
     loggedIn: (loggedIn, previous) => {
         document.body.classList.remove('hidden');
-        const $token = $('.alternatives-token-container');
+        const $login = $('.alternatives-login-container');
         const $volume = $('.alternatives-volume-container');
         const $list = $('.alternatives-list-container');
         const $nux = $('.nux');
 
         if (!loggedIn) {
-            $token.classList.remove('hidden');
+            $login.classList.remove('hidden');
             $volume.classList.add('hidden');
             $list.classList.add('hidden');
             $nux.classList.add('hidden');
             $('.alternatives-status').innerHTML = '';
         } else {
-            $token.classList.add('hidden');
+            $login.classList.add('hidden');
             $volume.classList.remove('hidden');
             $list.classList.remove('hidden');
 
@@ -254,10 +262,47 @@ const restoreState = () => {
 };
 
 const initialize = () => {
-    // show token input on login button click
-    $('.btn-login').addEventListener('click', () => {
-        $('.alternatives-login-buttons').classList.add('hidden');
-        $('.alternatives-token-controls-container').classList.remove('hidden');
+    // show login form
+    $('.btn-pre-login').addEventListener('click', () => {
+        $('.alternatives-login').classList.remove('hidden');
+        $('.alternatives-register').classList.add('hidden');
+        $('.alternatives-pre-login-buttons').classList.add('hidden');
+    });
+
+    // show register form
+    $$('.btn-pre-register').forEach(e => {
+        e.addEventListener('click', () => {
+            $('.alternatives-register').classList.remove('hidden');
+            $('.alternatives-login').classList.add('hidden');
+            $('.alternatives-pre-login-buttons').classList.add('hidden');
+        });
+    });
+
+    // send login details to client
+    $('.alternatives-login-form').addEventListener('submit', e => {
+        e.preventDefault();
+        vscode.postMessage({
+            event: 'sendIPC',
+            type: 'AUTHENTICATE',
+            data: {
+                email: $('.input-login-email').value,
+                password: $('.input-login-password').value
+            }
+        });
+    });
+
+    // send register details to client
+    $('.alternatives-register-form').addEventListener('submit', e => {
+        e.preventDefault();
+        vscode.postMessage({
+            event: 'sendIPC',
+            type: 'REGISTER',
+            data: {
+                name: $('.input-register-name').value,
+                email: $('.input-register-email').value,
+                password: $('.input-register-password').value
+            }
+        });
     });
 
     // toggle dropdown on dropdown button click
@@ -307,13 +352,6 @@ const initialize = () => {
 
         let index = $row.getAttribute('data-index');
         vscode.postMessage({ event: 'sendIPC', type: 'SEND_TEXT', data: { text: `use ${index}` } });
-    });
-
-    // save authentication token on save click
-    $('.btn-token-save').addEventListener('click', () => {
-        setState('token', $('.input-token').value);
-        setState('loggedIn', true);
-        vscode.postMessage({ event: 'sendIPC', type: 'RELOAD_SETTINGS' });
     });
 
     // vscode supplies theme variables via CSS4 variables, which aren't compatible with SCSS color functions (yet).
@@ -370,13 +408,13 @@ const nuxSteps = () => {
     return [
         {
             title: 'Welcome to Serenade!',
-            body: 'This guide will walk you through an introduction to Serenade.'
+            body: '<p>This guide will walk you through an introduction to Serenade.</p>'
         },
         {
             title: 'Setup',
             body:
-                "You should keep Serenade open in a panel that's side-by-side with the code you're editing, " +
-                "since you'll need to see what's displayed here."
+                "<p>You should keep Serenade open in a panel that's side-by-side with the code you're editing, " +
+                "since you'll need to see what's displayed here.</p>"
         },
         {
             title: 'Tabs and alternatives',
@@ -390,50 +428,50 @@ const nuxSteps = () => {
         {
             title: 'Save',
             body:
-                'Now, let\'s write some Python. First, say "save" to invoke the save dialog, then save the file ' +
-                'as hello.py.'
+                '<p>Now, let\'s write some Python. First, say "save" to invoke the save dialog, then save the file ' +
+                'as hello.py.</p>'
         },
         {
             title: 'Add import',
             body:
-                'Try saying "add import random" to add an import statement. Remember, you\'ll need to say ' +
-                '"use one" in order to run the command, or "clear" to try again.'
+                '<p>Try saying "add import random" to add an import statement. Remember, you\'ll need to say ' +
+                '"use one" in order to run the command, or "clear" to try again.</p>'
         },
         {
             title: 'Undo',
             body:
-                'If you accidentally select the wrong alternative, you can always say "undo" to go back. ' +
-                '"redo" also works.'
+                '<p>If you accidentally select the wrong alternative, you can always say "undo" to go back. ' +
+                '"redo" also works.</p>'
         },
         {
             title: 'Add function',
-            body: 'Next, create a function by saying "add function get random", followed by a "use" command.'
+            body: '<p>Next, create a function by saying "add function get random", followed by a "use" command.</p>'
         },
         {
             title: 'Add parameter',
             body:
-                'You can add a parameter called "number" to your function by saying "add parameter number", ' +
-                'followed by a "use" command.'
+                '<p>You can add a parameter called "number" to your function by saying "add parameter number", ' +
+                'followed by a "use" command.</p>'
         },
         {
             title: 'Add return',
-            body: 'Let\'s give the function a body. Say "add return 4" to add a return statement.'
+            body: '<p>Let\'s give the function a body. Say "add return 4" to add a return statement.</p>'
         },
         {
             title: 'Cursor movement',
             body:
-                'You can move around the cursor with commands like "up", "next line", or "line one". ' +
-                'Try saying "line one".'
+                '<p>You can move around the cursor with commands like "up", "next line", or "line one". ' +
+                'Try saying "line one".</p>'
         },
         {
             title: 'Deletion',
-            body: 'Now, to delete the import statement we added earlier, try saying "delete line".'
+            body: '<p>Now, to delete the import statement you added earlier, try saying "delete line".</p>'
         },
         {
             title: 'Learn more',
             body:
-                "That's it for our introduction! As a next step, take a look at the " +
-                '<a href="https://docs.serenade.ai">Serenade guide</a> to learn more.'
+                "<p>That's it for our introduction! As a next step, take a look at the " +
+                '<a href="https://docs.serenade.ai">Serenade guide</a> to learn more.</p>'
         }
     ];
 };

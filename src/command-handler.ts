@@ -155,6 +155,14 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_INVALID(_data: any): Promise<any> {}
 
+    async COMMAND_TYPE_LOGIN(data: any): Promise<any> {
+        if (data.text !== '' && data.text !== undefined) {
+            this.state.set('loggedIn', true);
+        } else {
+            this.state.set('loginError', 'Invalid email/password.');
+        }
+    }
+
     async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
         await this.focus();
         vscode.commands.executeCommand('workbench.action.nextEditor');

@@ -51,32 +51,40 @@ export default class AlternativesPanel {
       <div class="spacer"></div>
       <div class="alternatives-status"></div>
     </div>
-    <div class="alternatives-token-container">
-      <div class="alternatives-login-buttons">
-        <button class="btn btn-login">Log in</button>
-        <a href="https://serenade.ai/register" class="btn btn-register">Register</a>
+    <div class="alternatives-login-container">
+      <div class="alternatives-pre-login-buttons">
+        <button class="btn btn-pre-login">Sign in</button>
+        <button class="btn btn-pre-register">Sign up for Serenade</button>
       </div>
-      <div class="alternatives-token-controls-container hidden">
-        <div class="alternatives-token-controls">
-          <input type="text" class="input-token" placeholder="Enter your token." />
-          <button class="btn btn-token-save">Save</button>
-        </div>
-        <div class="alternatives-token-text">
-            Don't have a token? Register 
-            <a href="https://serenade.ai/register">here</a>.
-        </div>
+      <div class="alternatives-login hidden">
+        <div class="login-error hidden"></div>
+        <form class="alternatives-login-form">
+          <input type="email" class="input-login-email" placeholder="Email" />
+          <input type="password" class="input-login-password" placeholder="Password" />
+          <input type="submit" class="btn btn-login" value="Sign in" />
+          <a href="#" class="btn-login-alt btn-pre-register">Or sign up for an account</a>
+        </form>
+      </div>
+      <div class="alternatives-register hidden">
+        <div class="login-error hidden"></div>
+        <form class="alternatives-register-form">
+          <input type="text" class="input-register-name" placeholder="Full name" />
+          <input type="email" class="input-register-email" placeholder="Email" />
+          <input type="password" class="input-register-password" placeholder="Password" />
+          <input type="submit" class="btn btn-register" value="Sign up for Serenade" />
+        </form>
       </div>
     </div>
-    <div class="alternatives-volume-container">
+    <div class="alternatives-volume-container hidden">
       <div class="alternatives-listen-controls">
-          <button class="btn btn-listen">Listen</button>
-          <button class="btn btn-menu">
-          <i class="fas fa-chevron-down"></i>
-          <div class="menu-dropdown hidden">
-              <a href="#" class="btn-clear">Clear</a>
-              <a href="#" class="btn-guide">Guide</a>
-              <a href="#" class="btn-reference">Reference</a>
-          </div>
+        <button class="btn btn-listen">Listen</button>
+        <button class="btn btn-menu">
+        <i class="fas fa-chevron-down"></i>
+        <div class="menu-dropdown hidden">
+          <a href="#" class="btn-clear">Clear</a>
+          <a href="#" class="btn-guide">Guide</a>
+          <a href="#" class="btn-reference">Reference</a>
+        </div>
       </div>
       </button>
       <div class="alternatives-bar-container">
@@ -89,7 +97,7 @@ export default class AlternativesPanel {
       <div class="nux-body"></div>
       <button class="btn btn-nux-next">Next</button>
     </div>
-    <div class="alternatives-list-container">
+    <div class="alternatives-list-container hidden">
       <div class="alternatives-valid">
         <div class="alternatives-valid-header"></div>
         <div class="alternatives-valid-list"></div>

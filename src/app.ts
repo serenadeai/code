@@ -93,7 +93,7 @@ export default class App {
             this.settings!.set('token', token);
         });
 
-        this.state.set('loggedIn', true);
+        this.state.set('loggedIn', !!this.settings.get('token'));
         this.state.set('nuxCompleted', this.settings.get('nux_completed'));
         this.state.set('alternatives', {});
         this.state.set('volume', 0);
