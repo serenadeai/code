@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 
 import AlternativesPanel from './alternatives-panel';
+import BaseRunner from './client-runner/base-runner';
 import ClientRunnerFactory from './client-runner/client-runner-factory';
 import CommandHandler from './command-handler';
 import DocsPanel from './docs-panel';
 import IPC from './ipc';
 import Settings from './settings';
 import StateManager from './state-manager';
-import BaseRunner from './client-runner/base-runner';
 
 export default class App {
     clientRunner?: BaseRunner;
@@ -25,9 +25,11 @@ export default class App {
     handleMessage(message: any) {
         if (message.event === 'sendIPC') {
             this.ipc!.send(message.type, message.data);
-        } else if (message.event === 'setState') {
+        }
+        else if (message.event === 'setState') {
             this.state!.set(message.key, message.value);
-        } else if (message.event === 'showDocsPanel') {
+        }
+        else if (message.event === 'showDocsPanel') {
             // don't show the same panel multiple times
             if (!this.state!.get(`docs-${message.url}`)) {
                 this.showDocsPanel(message.url);
@@ -38,10 +40,7 @@ export default class App {
     showDocsPanel(url: string) {
         const docsPanel = new DocsPanel(this.context.extensionPath, url);
         const docsWebviewPanel = vscode.window.createWebviewPanel(
-            `serenade-${url}`,
-            'Serenade Docs',
-            vscode.ViewColumn.Three,
-            { enableScripts: true }
+            `serenade-${url}`, 'Serenade Docs', vscode.ViewColumn.Three, {enableScripts: true}
         );
         docsWebviewPanel.onDidDispose(() => {
             this.state!.set(`docs-${url}`, false);
@@ -57,11 +56,7 @@ export default class App {
             'serenade',
             'Serenade',
             vscode.ViewColumn.Two,
-            {
-                enableScripts: true,
-                localResourceRoots: [vscode.Uri.file(root)],
-                retainContextWhenHidden: true
-            }
+            {enableScripts: true, localResourceRoots: [vscode.Uri.file(root)], retainContextWhenHidden: true}
         );
 
         this.state = new StateManager([alternativesWebviewPanel.webview]);
@@ -77,23 +72,15 @@ export default class App {
             this.onDestroy();
         });
 
-        alternativesWebviewPanel.webview.onDidReceiveMessage(
-            message => {
-                this.handleMessage(message);
-            },
-            undefined,
-            this.context.subscriptions
-        );
+        alternativesWebviewPanel.webview.onDidReceiveMessage(message => {
+            this.handleMessage(message);
+        }, undefined, this.context.subscriptions);
 
         this.state.subscribe('nuxCompleted', (completed: any, _previous: any) => {
             this.settings!.set('nux_completed', completed);
         });
 
-        this.state.subscribe('token', (token: any, _previous: any) => {
-            this.settings!.set('token', token);
-        });
-
-        this.state.set('loggedIn', !!this.settings.get('token'));
+        this.state.set('appState', 'LOADING');
         this.state.set('nuxCompleted', this.settings.get('nux_completed'));
         this.state.set('alternatives', {});
         this.state.set('volume', 0);
@@ -103,7 +90,7 @@ export default class App {
 
         this.clientRunner.installAndRun(() => {
             const token = this.settings!.get('token');
-            this.state!.set('loggedIn', token && token.length);
+            this.state!.set('appState', token && token.length ? 'READY' : 'LOGIN_FORM');
         });
     }
 }

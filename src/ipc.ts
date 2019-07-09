@@ -11,19 +11,11 @@ export default class IPC {
     constructor(state: StateManager, commandHandler: CommandHandler) {
         this.state = state;
         this.commandHandler = commandHandler;
-
-        this.state.subscribe('listening', (listening: any, previous: any) => {
-            if (listening === !!previous) {
-                return;
-            }
-
-            this.send(listening ? 'ENABLE_LISTENING' : 'DISABLE_LISTENING');
-        });
     }
 
     async handle(response: any): Promise<any> {
         if (response.alternatives) {
-            this.state.set('alternatives', { alternatives: response.alternatives });
+            this.state.set('alternatives', {alternatives: response.alternatives});
         }
 
         let result = null;
@@ -50,7 +42,7 @@ export default class IPC {
             port: 17373,
             path: '/',
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(json) }
+            headers: {'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(json)}
         });
 
         request.write(json);
@@ -58,6 +50,14 @@ export default class IPC {
     }
 
     start() {
+        this.state.subscribe('listening', (listening: any, previous: any) => {
+            if (listening === !!previous) {
+                return;
+            }
+
+            this.send(listening ? 'ENABLE_LISTENING' : 'DISABLE_LISTENING');
+        });
+
         this.server = http.createServer((request, response) => {
             let body = '';
             request.on('data', data => {
@@ -68,7 +68,7 @@ export default class IPC {
                 let parseResponse = JSON.parse(body);
                 let result = await this.handle(parseResponse);
                 if (!result) {
-                    result = { success: true };
+                    result = {success: true};
                 }
 
                 response.statusCode = 200;

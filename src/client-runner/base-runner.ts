@@ -1,17 +1,15 @@
 import { ChildProcess, spawn } from 'child_process';
-import * as decompress from 'decompress';
 import * as fs from 'fs';
 import * as http from 'http';
+import * as https from 'https';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
-import * as request from 'request';
 import * as rimraf from 'rimraf';
+import * as targz from 'targz';
 import * as kill from 'tree-kill';
 
 import Settings from '../settings';
 import StateManager from '../state-manager';
-
-const progress = require('request-progress');
 
 export default abstract class BaseRunner {
     private state: StateManager;
@@ -42,7 +40,7 @@ export default abstract class BaseRunner {
     }
 
     clientVersion() {
-        return 'ed37735306c851eed8010bf6dbb55920';
+        return '3a257bc174890aaa323ec49b0e0fc7b4';
     }
 
     clientUrl() {
@@ -70,6 +68,7 @@ export default abstract class BaseRunner {
     }
 
     downloadAndDecompress(url: string, version: string, archiveName: string, status: string, callback: () => void) {
+        let shouldUpdateUI = true;
         const archive = `${this.settings.path()}/${archiveName}`;
         let base = path.dirname(archive);
         if (fs.existsSync(`${base}/${version}`)) {
@@ -83,19 +82,42 @@ export default abstract class BaseRunner {
         rimraf.sync(base);
         mkdirp.sync(base);
 
-        progress(request(url))
-            .on('progress', (state: any) => {
-                this.state.set('status', `${status} (${Math.floor(state.percent * 100)}%)\n`);
-            })
-            .on('end', () => {
-                decompress(archive, path.dirname(archive)).then(() => {
-                    fs.unlinkSync(archive);
-                    if (callback) {
-                        callback();
+        const file = fs.createWriteStream(archive);
+        https.get(url, response => {
+            let downloaded = 0;
+            const length = response.headers['content-length'];
+            let total = 0;
+            if (length !== undefined) {
+                total = parseInt(length, 10);
+            }
+
+            response.on('data', data => {
+                downloaded += data.length;
+                if (shouldUpdateUI) {
+                    this.state.set('status', `${status} (${Math.min(100, Math.floor((100 * downloaded) / total))}%)\n`);
+                    shouldUpdateUI = false;
+                    setTimeout(() => {
+                        shouldUpdateUI = true;
+                    }, 500);
+                }
+            });
+
+            response.pipe(file);
+            file.on('finish', () => {
+                targz.decompress(
+                    {
+                        src: archive,
+                        dest: base
+                    },
+                    _err => {
+                        fs.unlinkSync(archive);
+                        if (callback) {
+                            callback();
+                        }
                     }
-                });
-            })
-            .pipe(fs.createWriteStream(archive));
+                );
+            });
+        });
     }
 
     installAndRun(callback: () => void) {
@@ -137,7 +159,7 @@ export default abstract class BaseRunner {
         this.downloadAndDecompress(
             this.clientUrl(),
             this.clientVersion(),
-            'client/Serenade.tar.gz',
+            'client/serenade.tar.gz',
             'Updating',
             callback
         );

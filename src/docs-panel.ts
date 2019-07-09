@@ -28,7 +28,7 @@ html, body, iframe {
 
   <body>
     <iframe src="${this.url}" frameBorder="0"></iframe>
-    <script src="vscode-resource:${this.root}/src/docs.js"></script>
+    <script src="vscode-resource:${this.root}/build/docs.js"></script>
   </body>
 </html>`;
     }

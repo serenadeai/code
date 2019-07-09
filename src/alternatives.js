@@ -63,17 +63,45 @@ const stateHandlers = {
         }
 
         // show suggestions if there aren't any alternatives
-        else if (
-            getState('nuxCompleted') &&
-            (data.suggestions || !previous || (previous && 'alternatives' in previous))
-        ) {
+        else if (data.suggestions || !previous || (previous && 'alternatives' in previous)) {
+            const completed = getState('nuxCompleted');
             $('.alternatives-valid').classList.remove('hidden');
-            $('.alternatives-valid-header').innerHTML = 'Try saying';
-            $('.alternatives-valid-list').innerHTML = suggestionRows(randomSuggestions(5));
+            $('.alternatives-valid-header').innerHTML = completed ? 'Try saying' : '';
+            $('.alternatives-valid-list').innerHTML = completed ? suggestionRows(randomSuggestions(5)) : '';
 
             $('.alternatives-invalid').classList.add('hidden');
             $('.alternatives-invalid-header').innerHTML = '';
             $('.alternatives-invalid-list').innerHTML = '';
+        }
+    },
+
+    appState: (state, previous) => {
+        document.body.classList.remove('hidden');
+        const $login = $('.alternatives-login-container');
+        const $volume = $('.alternatives-volume-container');
+        const $list = $('.alternatives-list-container');
+        const $nux = $('.nux');
+
+        if (state === 'LOADING') {
+            $login.classList.add('hidden');
+            $volume.classList.add('hidden');
+            $list.classList.add('hidden');
+            $nux.classList.add('hidden');
+        } else if (state === 'LOGIN_FORM') {
+            $login.classList.remove('hidden');
+            $volume.classList.add('hidden');
+            $list.classList.add('hidden');
+            $nux.classList.add('hidden');
+            $('.alternatives-status').innerHTML = '';
+        } else if (state === 'READY') {
+            $login.classList.add('hidden');
+            $volume.classList.remove('hidden');
+            $list.classList.remove('hidden');
+            setState('status', 'Paused');
+
+            if (!getState('nuxCompleted')) {
+                $nux.classList.remove('hidden');
+            }
         }
     },
 
@@ -90,6 +118,15 @@ const stateHandlers = {
         }
     },
 
+    listening: (on, previous) => {
+        $('.btn-listen').innerHTML = on ? 'Pause' : 'Listen';
+        if (on) {
+            $('.listening-indicator').classList.remove('hidden');
+        } else {
+            $('.listening-indicator').classList.add('hidden');
+        }
+    },
+
     loading: (on, previous) => {
         if (on) {
             $('.alternatives-valid-header').innerHTML =
@@ -98,19 +135,15 @@ const stateHandlers = {
     },
 
     loginError: (error, previous) => {
+        $('.btn-login').removeAttribute('disabled');
+        $('.btn-login .lds-ring').classList.add('hidden');
+        $('.btn-register').removeAttribute('disabled');
+        $('.btn-register .lds-ring').classList.add('hidden');
+
         $$('.login-error').forEach(e => {
             e.classList.remove('hidden');
             e.innerHTML = error;
         });
-    },
-
-    listening: (on, previous) => {
-        $('.btn-listen').innerHTML = on ? 'Pause' : 'Listen';
-        if (on) {
-            $('.listening-indicator').classList.remove('hidden');
-        } else {
-            $('.listening-indicator').classList.add('hidden');
-        }
     },
 
     nuxCompleted: (completed, previous) => {
@@ -148,30 +181,6 @@ const stateHandlers = {
     volume: (volume, previous) => {
         volume = volume || 0;
         $('.alternatives-bar').style.width = volume + '%';
-    },
-
-    loggedIn: (loggedIn, previous) => {
-        document.body.classList.remove('hidden');
-        const $login = $('.alternatives-login-container');
-        const $volume = $('.alternatives-volume-container');
-        const $list = $('.alternatives-list-container');
-        const $nux = $('.nux');
-
-        if (!loggedIn) {
-            $login.classList.remove('hidden');
-            $volume.classList.add('hidden');
-            $list.classList.add('hidden');
-            $nux.classList.add('hidden');
-            $('.alternatives-status').innerHTML = '';
-        } else {
-            $login.classList.add('hidden');
-            $volume.classList.remove('hidden');
-            $list.classList.remove('hidden');
-
-            if (!getState('nuxCompleted')) {
-                $nux.classList.remove('hidden');
-            }
-        }
     }
 };
 
@@ -278,31 +287,20 @@ const initialize = () => {
         });
     });
 
-    // send login details to client
+    // login form submission
     $('.alternatives-login-form').addEventListener('submit', e => {
-        e.preventDefault();
-        vscode.postMessage({
-            event: 'sendIPC',
-            type: 'AUTHENTICATE',
-            data: {
-                email: $('.input-login-email').value,
-                password: $('.input-login-password').value
-            }
-        });
+        login();
+    });
+    $('.btn-login').addEventListener('click', e => {
+        login();
     });
 
-    // send register details to client
+    // reigster form submission
     $('.alternatives-register-form').addEventListener('submit', e => {
-        e.preventDefault();
-        vscode.postMessage({
-            event: 'sendIPC',
-            type: 'REGISTER',
-            data: {
-                name: $('.input-register-name').value,
-                email: $('.input-register-email').value,
-                password: $('.input-register-password').value
-            }
-        });
+        register();
+    });
+    $('.btn-register').addEventListener('click', e => {
+        register();
     });
 
     // toggle dropdown on dropdown button click
@@ -345,12 +343,12 @@ const initialize = () => {
 
     // send use command on alternative click
     $('.alternatives-valid-list').addEventListener('click', e => {
-        let $row = e.target.closest('.alternative-row');
+        const $row = e.target.closest('.alternative-row');
         if ($row.classList.contains('suggestion')) {
             return;
         }
 
-        let index = $row.getAttribute('data-index');
+        const index = $row.getAttribute('data-index');
         vscode.postMessage({ event: 'sendIPC', type: 'SEND_TEXT', data: { text: `use ${index}` } });
     });
 
@@ -373,6 +371,20 @@ const initialize = () => {
     restoreState();
 };
 
+const login = () => {
+    $('.btn-login .lds-ring').classList.remove('hidden');
+    $('.btn-login').setAttribute('disabled', 'true');
+
+    vscode.postMessage({
+        event: 'sendIPC',
+        type: 'AUTHENTICATE',
+        data: {
+            email: $('.input-login-email').value,
+            password: $('.input-login-password').value
+        }
+    });
+};
+
 const randomSuggestions = n => {
     let choices = suggestions();
     let result = [];
@@ -381,6 +393,21 @@ const randomSuggestions = n => {
     }
 
     return result;
+};
+
+const register = () => {
+    $('.btn-register .lds-ring').classList.remove('hidden');
+    $('.btn-register').setAttribute('disabled', 'true');
+
+    vscode.postMessage({
+        event: 'sendIPC',
+        type: 'REGISTER',
+        data: {
+            name: $('.input-register-name').value,
+            email: $('.input-register-email').value,
+            password: $('.input-register-password').value
+        }
+    });
 };
 
 const suggestionRows = suggestions => {

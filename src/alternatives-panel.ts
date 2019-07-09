@@ -20,25 +20,20 @@ export default class AlternativesPanel {
     font-weight: 900;
     font-display: auto;
     src: url(vscode-resource:${this.root}/fonts/fa-solid-900.eot);
-    src: url(vscode-resource:${
-        this.root
-    }/fonts/fa-solid-900.eot?#iefix) format("embedded-opentype"),url(vscode-resource:${
-            this.root
-        }/fonts/fa-solid-900.woff2) format("woff2"),url(vscode-resource:${
-            this.root
-        }/fonts/fa-solid-900.woff) format("woff"),url(vscode-resource:${
-            this.root
-        }/fonts/fa-solid-900.ttf) format("truetype"),url(vscode-resource:${
-            this.root
-        }/fonts/fa-solid-900.svg#fontawesome) format("svg");
+    src: url(vscode-resource:${this.root}/fonts/fa-solid-900.eot?#iefix) format("embedded-opentype"),
+            url(vscode-resource:${this.root}/fonts/fa-solid-900.woff2) format("woff2"),
+            url(vscode-resource:${this.root}/fonts/fa-solid-900.woff) format("woff"),
+            url(vscode-resource:${this.root}/fonts/fa-solid-900.ttf) format("truetype"),
+            url(vscode-resource:${this.root}/fonts/fa-solid-900.svg#fontawesome) format("svg");
 }
+
 .fa, .fas {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
 }
     </style>
 
-    <link rel="stylesheet" href="vscode-resource:${this.root}/out/alternatives-panel.css" />
+    <link rel="stylesheet" href="vscode-resource:${this.root}/build/alternatives-panel.css" />
   </head>
 
   <body class="hidden">
@@ -59,9 +54,12 @@ export default class AlternativesPanel {
       <div class="alternatives-login hidden">
         <div class="login-error hidden"></div>
         <form class="alternatives-login-form">
-          <input type="email" class="input-login-email" placeholder="Email" />
+          <input type="text" class="input-login-email" placeholder="Email" />
           <input type="password" class="input-login-password" placeholder="Password" />
-          <input type="submit" class="btn btn-login" value="Sign in" />
+          <button class="btn btn-login">
+              Sign in
+              <div class="lds-ring hidden"><div></div><div></div><div></div><div></div></div>
+          </button>
           <a href="#" class="btn-login-alt btn-pre-register">Or sign up for an account</a>
         </form>
       </div>
@@ -69,9 +67,12 @@ export default class AlternativesPanel {
         <div class="login-error hidden"></div>
         <form class="alternatives-register-form">
           <input type="text" class="input-register-name" placeholder="Full name" />
-          <input type="email" class="input-register-email" placeholder="Email" />
+          <input type="text" class="input-register-email" placeholder="Email" />
           <input type="password" class="input-register-password" placeholder="Password" />
-          <input type="submit" class="btn btn-register" value="Sign up for Serenade" />
+          <button class="btn btn-register">
+              Sign up for Serenade
+              <div class="lds-ring hidden"><div></div><div></div><div></div><div></div></div>
+          </button>
         </form>
       </div>
     </div>
@@ -107,7 +108,7 @@ export default class AlternativesPanel {
         <div class="alternatives-invalid-list"></div>
       </div>
     </div>
-    <script src="vscode-resource:${this.root}/src/alternatives.js"></script>
+    <script src="vscode-resource:${this.root}/build/alternatives.js"></script>
   </body>
 </html>`;
     }

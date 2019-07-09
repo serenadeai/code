@@ -31,7 +31,17 @@ export default class CommandHandler {
         this.pendingFiles = [];
     }
 
-    private setSourceAndCursor(source: string, cursor: number) {
+    private async scrollToCursor() {
+        const editor = vscode.window.activeTextEditor;
+        if (editor !== undefined) {
+            await vscode.commands.executeCommand('revealLine', {
+                lineNumber: editor.selection.start.line,
+                at: 'center'
+            });
+        }
+    }
+
+    private async setSourceAndCursor(source: string, cursor: number) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -62,6 +72,7 @@ export default class CommandHandler {
         });
 
         editor.selections = [new vscode.Selection(row, column, row, column)];
+        await this.scrollToCursor();
     }
 
     private async uiDelay() {
@@ -105,7 +116,7 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_DIFF(data: any): Promise<any> {
         await this.focus();
-        this.setSourceAndCursor(data.source, data.cursor);
+        await this.setSourceAndCursor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
@@ -157,7 +168,7 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_LOGIN(data: any): Promise<any> {
         if (data.text !== '' && data.text !== undefined) {
-            this.state.set('loggedIn', true);
+            this.state.set('appState', 'READY');
         } else {
             this.state.set('loginError', 'Invalid email/password.');
         }
@@ -279,6 +290,7 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_REDO(_data: any): Promise<any> {
         vscode.commands.executeCommand('redo');
+        await this.scrollToCursor();
     }
 
     async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
@@ -302,7 +314,7 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_SNIPPET_EXECUTED(data: any): Promise<any> {
         await this.focus();
-        this.setSourceAndCursor(data.source, data.cursor);
+        await this.setSourceAndCursor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
@@ -321,6 +333,7 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_UNDO(_data: any): Promise<any> {
         vscode.commands.executeCommand('undo');
+        await this.scrollToCursor();
     }
 
     async COMMAND_TYPE_USE(data: any): Promise<any> {

@@ -2,8 +2,10 @@
     "name": "serenade",
     "displayName": "Serenade",
     "description": "Code with voice. Learn more at https://serenade.ai.",
-    "publisher": "serenadeai",
-    "version": "0.0.1",
+    "license": "UNLICENSED",
+    "publisher": "serenade",
+    "repository": "https://github.com/serenadeai/code",
+    "version": "1.0.0",
     "engines": {
         "vscode": "^1.33.0"
     },
@@ -14,7 +16,7 @@
         "onCommand:extension.serenadeEnable",
         "onCommand:extension.serenadeShowTranscriptInput"
     ],
-    "main": "./out/extension.js",
+    "main": "./build/extension.js",
     "contributes": {
         "commands": [
             {
@@ -28,32 +30,39 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "npm run tsc ; npm run scss",
-        "tsc": "tsc -p ./",
-        "scss": "node-sass-chokidar ./src -o ./out",
-        "watch": "node-sass-chokidar ./src -o ./out --watch & tsc -watch -p ./",
+        "vscode:prepublish": "webpack --mode production",
+        "compile": "webpack --mode production",
+        "watch": "webpack --mode development",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "dependencies": {
-        "decompress": "^4.2.0",
         "mkdirp": "0.5.1",
-        "request": "^2.88.0",
-        "request-progress": "^3.0.0",
         "rimraf": "2.6.3",
+        "targz": "1.0.1",
         "tree-kill": "1.2.1"
     },
     "devDependencies": {
+        "@babel/core": "^7.5.0",
+        "@babel/preset-env": "^7.5.0",
         "@types/decompress": "^4.2.3",
         "@types/mkdirp": "^0.5.2",
         "@types/mocha": "^2.2.42",
-        "@types/node": "^10.12.21",
+        "@types/node": "^10.14.12",
         "@types/request": "^2.48.1",
         "@types/rimraf": "^2.0.2",
-        "node-sass-chokidar": "^1.3.4",
+        "@types/targz": "^1.0.0",
+        "babel-loader": "^8.0.6",
+        "css-loader": "^3.0.0",
+        "mini-css-extract-plugin": "^0.7.0",
+        "node-sass": "^4.12.0",
+        "sass-loader": "^7.1.0",
+        "style-loader": "^0.23.1",
+        "ts-loader": "^6.0.4",
         "tslint": "^5.12.1",
-        "typescript": "^3.3.1",
-        "vscode": "^1.1.28"
+        "typescript": "^3.5.2",
+        "vscode": "^1.1.28",
+        "webpack": "^4.35.0",
+        "webpack-cli": "^3.3.5"
     }
 }
