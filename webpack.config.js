@@ -22,7 +22,8 @@ module.exports = [
             vscode: 'commonjs vscode'
         },
         resolve: {
-            extensions: ['.tsx', '.ts', '.js']
+            extensions: ['.tsx', '.ts', '.js'],
+            symlinks: false
         },
         module: {
             rules: [
@@ -58,7 +59,7 @@ module.exports = [
         name: 'webview',
         target: 'web',
         entry: {
-            alternatives: './src/alternatives.js',
+            alternatives: './src/alternatives.ts',
             docs: './src/docs.js'
         },
         output: {
@@ -68,7 +69,8 @@ module.exports = [
         },
         devtool: 'source-map',
         resolve: {
-            extensions: ['.tsx', '.ts', '.js']
+            extensions: ['.tsx', '.ts', '.js'],
+            symlinks: false
         },
         module: {
             rules: [

@@ -1,11 +1,14 @@
-export default class AlternativesPanel {
+import BaseAlternativesPanel from './shared/alternatives-panel';
+
+export default class AlternativesPanel extends BaseAlternativesPanel {
     private root: string;
 
     constructor(root: string) {
+        super();
         this.root = root;
     }
 
-    public html() {
+    html(): string {
         return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -36,80 +39,14 @@ export default class AlternativesPanel {
     <link rel="stylesheet" href="vscode-resource:${this.root}/build/alternatives-panel.css" />
   </head>
 
-  <body class="hidden">
-    <div class="success-color"></div>
-    <div class="alternatives-logo-container">
-      <div class="alternatives-logo">
-        <img src="vscode-resource:${this.root}/img/wordmark.png" />
-      </div>
-      <div class="hidden listening-indicator"></div>
-      <div class="spacer"></div>
-      <div class="alternatives-status"></div>
-    </div>
-    <div class="alternatives-login-container">
-      <div class="alternatives-pre-login-buttons">
-        <button class="btn btn-pre-login">Sign in</button>
-        <button class="btn btn-pre-register">Sign up for Serenade</button>
-      </div>
-      <div class="alternatives-login hidden">
-        <div class="login-error hidden"></div>
-        <form class="alternatives-login-form">
-          <input type="text" class="input-login-email" placeholder="Email" />
-          <input type="password" class="input-login-password" placeholder="Password" />
-          <button class="btn btn-login">
-              Sign in
-              <div class="lds-ring hidden"><div></div><div></div><div></div><div></div></div>
-          </button>
-          <a href="#" class="btn-login-alt btn-pre-register">Or sign up for an account</a>
-        </form>
-      </div>
-      <div class="alternatives-register hidden">
-        <div class="login-error hidden"></div>
-        <form class="alternatives-register-form">
-          <input type="text" class="input-register-name" placeholder="Full name" />
-          <input type="text" class="input-register-email" placeholder="Email" />
-          <input type="password" class="input-register-password" placeholder="Password" />
-          <button class="btn btn-register">
-              Sign up for Serenade
-              <div class="lds-ring hidden"><div></div><div></div><div></div><div></div></div>
-          </button>
-        </form>
-      </div>
-    </div>
-    <div class="alternatives-volume-container hidden">
-      <div class="alternatives-listen-controls">
-        <button class="btn btn-listen">Listen</button>
-        <button class="btn btn-menu">
-        <i class="fas fa-chevron-down"></i>
-        <div class="menu-dropdown hidden">
-          <a href="#" class="btn-clear">Clear</a>
-          <a href="#" class="btn-guide">Guide</a>
-          <a href="#" class="btn-reference">Reference</a>
-        </div>
-      </div>
-      </button>
-      <div class="alternatives-bar-container">
-        <div class="alternatives-bar success-color-light"></div>
-      </div>
-    </div>
-    <div class="nux hidden">
-      <div class="nux-progress success-color-light"></div>
-      <h2 class="nux-heading"></h2>
-      <div class="nux-body"></div>
-      <button class="btn btn-nux-next">Next</button>
-    </div>
-    <div class="alternatives-list-container hidden">
-      <div class="alternatives-valid">
-        <div class="alternatives-valid-header"></div>
-        <div class="alternatives-valid-list"></div>
-      </div>
-      <div class="alternatives-invalid">
-        <div class="alternatives-invalid-header"></div>
-        <div class="alternatives-invalid-list"></div>
-      </div>
-    </div>
+  <body>
+    ${super.html()}
     <script src="vscode-resource:${this.root}/build/alternatives.js"></script>
   </body>
 </html>`;
+    }
+
+    logo(): string {
+        return `<img src="vscode-resource:${this.root}/img/wordmark.png" />`;
     }
 }

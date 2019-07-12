@@ -7,7 +7,7 @@ export default class DocsPanel {
         this.url = url;
     }
 
-    public html() {
+    html(): string {
         return `<!DOCTYPE html>
 <html lang="en">
   <head>

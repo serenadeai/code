@@ -1,45 +1,18 @@
 import * as vscode from 'vscode';
+import StateManager from './shared/state-manager';
 
-export default class StateManager {
+export default class VSStateManager extends StateManager {
     private webviews: vscode.Webview[];
-    private data: any;
-    private callbacks: any;
 
     constructor(webviews: vscode.Webview[]) {
+        super();
         this.webviews = webviews;
-        this.data = {};
-        this.callbacks = {};
     }
 
-    get(key: string) {
-        return this.data[key];
-    }
-
-    set(key: string, value: any) {
-        let previous = this.data[key];
-        if (previous) {
-            previous = JSON.parse(JSON.stringify(this.data[key]));
-        }
-
-        // handle local callbacks for state change
-        this.data[key] = value;
-        if (key in this.callbacks) {
-            for (let callback of this.callbacks[key]) {
-                callback(value, previous);
-            }
-        }
-
+    protected afterSet(key: string, value: any, previous: any) {
         // forward state change to all webviews
         for (const webview of this.webviews) {
-            webview.postMessage({ event: `state:${key}`, data: value, previous: previous });
+            webview.postMessage({event: `state:${key}`, data: value, previous: previous});
         }
-    }
-
-    subscribe(key: string, callback: (value: any, previous: any) => void) {
-        if (!(key in this.callbacks)) {
-            this.callbacks[key] = [];
-        }
-
-        this.callbacks[key].push(callback);
     }
 }

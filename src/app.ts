@@ -1,23 +1,20 @@
 import * as vscode from 'vscode';
 
 import AlternativesPanel from './alternatives-panel';
-import BaseRunner from './client-runner/base-runner';
-import ClientRunnerFactory from './client-runner/client-runner-factory';
 import CommandHandler from './command-handler';
 import DocsPanel from './docs-panel';
-import IPC from './ipc';
-import Settings from './settings';
-import StateManager from './state-manager';
+import BaseApp from './shared/app';
+import ClientRunnerFactory from './shared/client-runner/client-runner-factory';
+import IPC from './shared/ipc';
+import Settings from './shared/settings';
+import VSStateManager from './state-manager';
 
-export default class App {
-    clientRunner?: BaseRunner;
-    context: vscode.ExtensionContext;
-    ipc?: IPC;
+export default class App extends BaseApp {
+    private context: vscode.ExtensionContext;
     onDestroy: () => void;
-    settings?: Settings;
-    state?: StateManager;
 
     constructor(context: vscode.ExtensionContext, onDestroy: () => void) {
+        super();
         this.context = context;
         this.onDestroy = onDestroy;
     }
@@ -59,16 +56,15 @@ export default class App {
             {enableScripts: true, localResourceRoots: [vscode.Uri.file(root)], retainContextWhenHidden: true}
         );
 
-        this.state = new StateManager([alternativesWebviewPanel.webview]);
+        this.state = new VSStateManager([alternativesWebviewPanel.webview]);
         this.settings = new Settings();
-        this.clientRunner = new ClientRunnerFactory(this.state, this.settings).get();
-        const commandHandler = new CommandHandler(this.state, alternativesWebviewPanel);
-        this.ipc = new IPC(this.state, commandHandler);
-        commandHandler.ipc = this.ipc;
+        this.clientRunner = new ClientRunnerFactory(this.state!, this.settings!).get();
+        const commandHandler = new CommandHandler(this, this.state!, alternativesWebviewPanel);
+        this.ipc = new IPC(this.state!, commandHandler);
 
         alternativesWebviewPanel.webview.html = alternativesPanel.html();
         alternativesWebviewPanel.onDidDispose(() => {
-            this.clientRunner!.kill();
+            this.destroy();
             this.onDestroy();
         });
 
@@ -76,21 +72,6 @@ export default class App {
             this.handleMessage(message);
         }, undefined, this.context.subscriptions);
 
-        this.state.subscribe('nuxCompleted', (completed: any, _previous: any) => {
-            this.settings!.set('nux_completed', completed);
-        });
-
-        this.state.set('appState', 'LOADING');
-        this.state.set('nuxCompleted', this.settings.get('nux_completed'));
-        this.state.set('alternatives', {});
-        this.state.set('volume', 0);
-        this.state.set('listening', false);
-        this.state.set('status', 'Paused');
-        this.ipc.start();
-
-        this.clientRunner.installAndRun(() => {
-            const token = this.settings!.get('token');
-            this.state!.set('appState', token && token.length ? 'READY' : 'LOGIN_FORM');
-        });
+        this.run();
     }
 }

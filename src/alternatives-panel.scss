@@ -1,47 +1,19 @@
-$space-tiny: 5px;
-$space-small: 10px;
-$space-medium: 15px;
-$space-large: 20px;
-$space-huge: 40px;
-$space-massive: 80px;
-
-$font-size-large: 16px;
-$font-size: 15px;
-$font-size-small: 14px;
-$font-size-tiny: 13px;
-
-$panel-background: var(--vscode-dropdown-background);
-$border-color: var(--vscode-pickerGroup-border);
-$button-background: var(--vscode-button-background);
-$button-background-hover: var(--vscode-button-hoverBackground);
-$button-foreground: var(--vscode-button-foreground);
-$error-color: var(--vscode-errorForeground);
-$success-color: var(--vscode-progressBar-background);
-$text-color: var(--vscode-foreground);
-
-@keyframes flicker {
-    0% {
-        opacity: 0.5;
-    }
-
-    50% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 0.5;
-    }
+:root {
+    --border-color: var(--vscode-pickerGroup-border);
+    --button-border-color: var(--vscode-pickerGroup-border);
+    --button-background-color: var(--vscode-button-background);
+    --button-background-color-hover: var(--vscode-button-hoverBackground);
+    --button-background-color-active: var(--vscode-button-background);
+    --button-foreground-color: var(--vscode-button-foreground);
+    --error-color: var(--vscode-errorForeground);
+    --panel-background-color: var(--vscode-dropdown-background);
+    --panel-border-color: var(--vscode-pickerGroup-border);
+    --success-color: var(--vscode-progressBar-background);
+    --text-color: var(--vscode-foreground);
+    --text-color-disabled: var(--vscode-foreground);
 }
 
-.hidden {
-    display: none !important;
-}
-
-.success-color {
-    background-color: $success-color;
-    height: 1px;
-    width: 1px;
-}
+@import 'shared/alternatives-panel';
 
 h1,
 h2,
@@ -71,7 +43,7 @@ body {
 
 input {
     background: var(--vscode-input-background);
-    border: solid 1px $border-color;
+    border: solid 1px var(--border-color);
     color: var(--vscode-input-foreground);
     font-size: $font-size-small !important;
     padding: $space-tiny $space-small;
@@ -84,15 +56,15 @@ pre {
 }
 
 .btn {
-    background: $button-background;
-    border: solid 1px $border-color;
-    color: $button-foreground;
+    background: var(--button-background-color);
+    border: solid 1px var(--button-border-color);
+    color: var(--button-foreground-color);
     font-size: $font-size-small !important;
     padding: $space-tiny $space-small;
 }
 
 .btn:hover {
-    background: $button-background-hover;
+    background: var(--button-background-color-hover);
 }
 
 a.btn {
@@ -103,368 +75,13 @@ a.btn {
 }
 
 a.btn:hover {
-    color: $button-foreground;
-}
-
-@keyframes lds-ring {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-.lds-ring {
-    display: inline-block;
-    position: relative;
-    width: 12px;
-    height: 12px;
-    vertical-align: middle;
-}
-
-.lds-ring div {
-    box-sizing: border-box;
-    display: block;
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border: 2px solid $text-color;
-    border-radius: 50%;
-    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: $text-color transparent transparent transparent;
-}
-
-.lds-ring div:nth-child(1) {
-    animation-delay: -0.45s;
-}
-
-.lds-ring div:nth-child(2) {
-    animation-delay: -0.3s;
-}
-
-.lds-ring div:nth-child(3) {
-    animation-delay: -0.15s;
-}
-
-.alternatives-logo-container {
-    display: flex;
-    padding: $space-medium;
-    align-items: center;
-    justify-content: center;
-
-    .listening-indicator {
-        animation: flicker 3s ease-in-out infinite;
-        background: $button-background;
-        border-radius: 8px;
-        height: 8px;
-        margin-left: $space-small;
-        margin-top: $space-tiny;
-        width: 8px;
-    }
-
-    .alternatives-logo {
-        img {
-            width: 120px;
-        }
-    }
-
-    .spacer {
-        flex-grow: 2;
-    }
-
-    .alternatives-status {
-        align-self: flex-end;
-        font-family: system-ui;
-        font-size: $font-size-tiny;
-    }
-}
-
-.alternatives-login-container {
-    margin: 0 $space-large;
-
-    .alternatives-pre-login-buttons,
-    .alternatives-login,
-    .alternatives-register {
-        input[type='text'],
-        input[type='email'],
-        input[type='password'] {
-            display: block;
-            margin-bottom: $space-tiny;
-            width: calc(100% - 22px);
-        }
-
-        .btn-login-alt {
-            display: block;
-            margin-top: $space-tiny;
-        }
-    }
-
-    .alternatives-pre-login-buttons {
-        .btn {
-            display: block;
-            margin-bottom: 1px;
-            height: 36px;
-            width: 100%;
-        }
-    }
-
-    .btn-login .lds-ring, .btn-register .lds-ring {
-        color: $button-foreground;
-        margin-left: $space-tiny;
-    }
-
-    .login-error {
-        margin-bottom: $space-small;
-    }
-}
-
-.alternatives-volume-container {
-    align-items: center;
-    display: flex;
-    padding: 0 $space-medium;
-
-    .alternatives-listen-controls {
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .btn-listen {
-        border-right: 0;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-        display: block;
-
-        &:focus {
-            border-right: 0;
-        }
-    }
-
-    .btn-menu {
-        border-left: 0;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        display: block;
-        font-size: 10px;
-        outline: 0;
-        padding: 2px 8px;
-        position: relative;
-
-        i {
-            transition: transform 0.2s;
-        }
-
-        i.active {
-            transform: rotate(180deg) scaleX(-1);
-        }
-
-        .menu-dropdown {
-            background: $button-background;
-            border-top: none;
-            left: 0;
-            margin-top: $space-tiny;
-            opacity: 0;
-            position: absolute;
-            transition: opacity 0.2s;
-            z-index: 2;
-
-            &.active {
-                opacity: 1;
-            }
-
-            a {
-                border-bottom: 1px solid $border-color;
-                color: $button-foreground;
-                font-size: $font-size-tiny;
-                display: block;
-                padding: $space-small;
-                text-align: left;
-                text-decoration: none;
-
-                &:hover,
-                &:focus {
-                    background: $button-background-hover;
-                }
-            }
-        }
-    }
-
-    .alternatives-bar-container {
-        flex-grow: 2;
-        border: 1px solid $border-color;
-        border-top: none;
-        margin-left: $space-small;
-        height: 6px;
-
-        .alternatives-bar {
-            height: 100%;
-            transition: width 0.2s;
-        }
-    }
+    color: var(--button-foreground-color);
 }
 
 .alternatives-list-container {
-    .alternatives-valid-header,
-    .alternatives-invalid-header {
-        font-size: $font-size-small;
-        margin-left: $space-small;
-        margin-top: $space-large;
-    }
-
-    .alternatives-valid-header .lds-ring {
-        margin-right: $space-tiny;
-    }
-
-    .alternatives-valid-list,
-    .alternatives-invalid-list {
-        margin-top: $space-small;
-    }
-
     .alternative-row {
-        border-bottom: solid 1px $border-color;
-        color: $text-color;
-        display: block;
-        font-size: $font-size;
-        padding: $space-small;
-
-        &:last-child {
-            border: none;
-        }
-
-        &:first-child {
-            border-top: solid 1px $border-color;
-        }
-
-        &.invalid {
-            color: $error-color;
-
-            .alternative-number {
-                border-color: $error-color !important;
-                color: $error-color !important;
-            }
-        }
-
         &.suggestion {
-            opacity: 0.5;
+            opacity: 0.5 !important;
         }
-
-        &.suggestion:hover {
-            background: inherit;
-        }
-
-        &.suggestion,
-        &.success-color-light:hover {
-            color: $text-color;
-            cursor: default;
-        }
-
-        &:not(.invalid):not(.success-color-light):not(.suggestion):hover {
-            color: $success-color;
-
-            .alternative-number {
-                border-color: $success-color;
-                color: $success-color;
-            }
-        }
-
-        .alternative-row-inner {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-
-            .alternative-number {
-                $size: 16px;
-
-                border: solid 2px $text-color;
-                border-radius: 50%;
-                color: $text-color;
-                font-weight: 600;
-                margin-right: $space-small;
-                min-height: $size;
-                min-width: $size;
-                padding: 4px;
-                text-align: center;
-
-                .alternative-number-inner {
-                    // required to center the number in the container
-                    line-height: $size - 1px;
-                }
-            }
-
-            .alternative-description {
-                // compensate for the (line-height - 1px) in the number
-                margin-top: -1px;
-                flex-grow: 2;
-                overflow: auto;
-
-                pre.inline {
-                    display: inline;
-                    margin: 0;
-                    margin-left: $space-tiny;
-                }
-
-                .alternative-code {
-                    display: block;
-                    margin-top: $space-small;
-
-                    pre {
-                        margin: 0;
-                    }
-                }
-            }
-        }
-    }
-
-    .alternative-row.has-newline {
-        .alternative-number {
-            align-self: flex-start;
-        }
-
-        .alternative-description {
-            margin-top: 2px;
-        }
-    }
-}
-
-.nux {
-    background: $panel-background;
-    border: solid 1px $border-color;
-    border-radius: $space-tiny;
-    padding: $space-tiny $space-small $space-small $space-small;
-    margin: $space-small;
-
-    p {
-        margin-bottom: 1em;
-    }
-
-    .nux-progress {
-        height: 2px;
-        width: 0%;
-        margin-bottom: 3px;
-    }
-
-    .nux-heading {
-        margin-top: $space-small;
-    }
-
-    .nux-body {
-        font-size: $font-size-small;
-        margin-top: $space-tiny;
-    }
-
-    .btn-nux-next {
-        font-size: $font-size-tiny !important;
-        margin-top: $space-small;
-    }
-}
-
-.help {
-    width: 500px;
-    overflow: auto;
-
-    iframe {
-        border: none;
-        height: 100%;
-        width: 100%;
     }
 }

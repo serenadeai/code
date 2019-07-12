@@ -1,7 +1,7 @@
 {
     "name": "serenade",
-    "displayName": "Serenade",
     "description": "Code with voice. Learn more at https://serenade.ai.",
+    "displayName": "Serenade",
     "license": "UNLICENSED",
     "publisher": "serenade",
     "repository": "https://github.com/serenadeai/code",
@@ -32,7 +32,8 @@
     "scripts": {
         "vscode:prepublish": "webpack --mode production",
         "compile": "webpack --mode production",
-        "watch": "webpack --mode development",
+        "dev": "webpack --mode development --watch",
+        "watch": "",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
@@ -45,11 +46,9 @@
     "devDependencies": {
         "@babel/core": "^7.5.0",
         "@babel/preset-env": "^7.5.0",
-        "@types/decompress": "^4.2.3",
         "@types/mkdirp": "^0.5.2",
         "@types/mocha": "^2.2.42",
         "@types/node": "^10.14.12",
-        "@types/request": "^2.48.1",
         "@types/rimraf": "^2.0.2",
         "@types/targz": "^1.0.0",
         "babel-loader": "^8.0.6",

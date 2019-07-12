@@ -1,16 +1,18 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import StateManager from './state-manager';
-import IPC from './ipc';
+import App from './app';
+import CommandHandlerBase from './shared/command-handler';
+import StateManager from './shared/state-manager';
 
-export default class CommandHandler {
+export default class CommandHandler implements CommandHandlerBase {
+    private app: App;
     private state: StateManager;
     private webviewPanel: vscode.WebviewPanel;
     private pendingFiles: vscode.Uri[] = [];
-    public ipc?: IPC;
 
-    constructor(state: StateManager, webviewPanel: vscode.WebviewPanel) {
+    constructor(app: App, state: StateManager, webviewPanel: vscode.WebviewPanel) {
+        this.app = app;
         this.state = state;
         this.webviewPanel = webviewPanel;
     }
@@ -34,10 +36,7 @@ export default class CommandHandler {
     private async scrollToCursor() {
         const editor = vscode.window.activeTextEditor;
         if (editor !== undefined) {
-            await vscode.commands.executeCommand('revealLine', {
-                lineNumber: editor.selection.start.line,
-                at: 'center'
-            });
+            await vscode.commands.executeCommand('revealLine', {lineNumber: editor.selection.start.line, at: 'center'});
         }
     }
 
@@ -62,10 +61,7 @@ export default class CommandHandler {
             var firstLine = editor.document.lineAt(0);
             var lastLine = editor.document.lineAt(editor.document.lineCount - 1);
             var textRange = new vscode.Range(
-                0,
-                firstLine.range.start.character,
-                editor.document.lineCount - 1,
-                lastLine.range.end.character
+                0, firstLine.range.start.character, editor.document.lineCount - 1, lastLine.range.end.character
             );
 
             edit.replace(textRange, source);
@@ -84,7 +80,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_CANCEL(_data: any): Promise<any> {
-        this.state.set('alternatives', { suggestions: true });
+        this.state.set('alternatives', {suggestions: true});
     }
 
     async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
@@ -120,7 +116,7 @@ export default class CommandHandler {
     }
 
     async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
-        let result = { source: '', cursor: 0, filename: '' };
+        let result = {source: '', cursor: 0, filename: ''};
 
         await this.focus();
         const editor = vscode.window.activeTextEditor;
@@ -164,12 +160,14 @@ export default class CommandHandler {
         vscode.commands.executeCommand('editor.action.revealDefinition');
     }
 
-    async COMMAND_TYPE_INVALID(_data: any): Promise<any> {}
+    async COMMAND_TYPE_INVALID(_data: any): Promise<any> {
+    }
 
     async COMMAND_TYPE_LOGIN(data: any): Promise<any> {
         if (data.text !== '' && data.text !== undefined) {
             this.state.set('appState', 'READY');
-        } else {
+        }
+        else {
             this.state.set('loginError', 'Invalid email/password.');
         }
     }
@@ -183,35 +181,35 @@ export default class CommandHandler {
     async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
         await this.focus();
         const path = (data.path as string).replace(' ', '*');
-        vscode.workspace
-            .findFiles(`*${path}*`, '{**/node_modules/**,*.class,*.jar,**/__pycache__/**}', 10)
-            .then(files => {
-                this.pendingFiles = files;
-                let prefixLength = 0;
-                if (files.length > 1) {
-                    while (prefixLength < files[0].path.length) {
-                        let different = false;
-                        for (const f of files) {
-                            if (prefixLength < f.path.length && f.path[prefixLength] !== files[0].path[prefixLength]) {
-                                different = true;
-                                break;
-                            }
-                        }
-
-                        if (different) {
+        vscode.workspace.findFiles(
+                            `*${path}*`, '{**/node_modules/**,*.class,*.jar,**/__pycache__/**}', 10
+        ).then(files => {
+            this.pendingFiles = files;
+            let prefixLength = 0;
+            if (files.length > 1) {
+                while (prefixLength < files[0].path.length) {
+                    let different = false;
+                    for (const f of files) {
+                        if (prefixLength < f.path.length && f.path[prefixLength] !== files[0].path[prefixLength]) {
+                            different = true;
                             break;
                         }
-
-                        prefixLength++;
                     }
+
+                    if (different) {
+                        break;
+                    }
+
+                    prefixLength++;
                 }
+            }
 
-                const alternatives = files.map(e => {
-                    return { description: `open <code>${e.path.substring(prefixLength)}</code>` };
-                });
-
-                this.state.set('alternatives', { alternatives: alternatives, type: 'files' });
+            const alternatives = files.map(e => {
+                return {description: `open <code>${e.path.substring(prefixLength)}</code>`};
             });
+
+            this.state.set('alternatives', {alternatives: alternatives, alternativeType: 'files'});
+        });
     }
 
     async COMMAND_TYPE_PASTE(data: any): Promise<any> {
@@ -271,8 +269,7 @@ export default class CommandHandler {
             }
 
             this.setSourceAndCursor(
-                source.substring(0, insertionPoint) + text + source.substring(insertionPoint),
-                updatedCursor
+                source.substring(0, insertionPoint) + text + source.substring(insertionPoint), updatedCursor
             );
         });
     }
@@ -309,7 +306,7 @@ export default class CommandHandler {
 
     async COMMAND_TYPE_SNIPPET(data: any): Promise<any> {
         this.state.set('loading', true);
-        this.ipc!.send('SEND_TEXT', { text: 'add executed snippet ' + data.text });
+        this.app.ipc!.send('SEND_TEXT', {text: 'add executed snippet ' + data.text});
     }
 
     async COMMAND_TYPE_SNIPPET_EXECUTED(data: any): Promise<any> {
