@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as vscode from 'vscode';
 import BaseAlternativesPanel from './shared/alternatives-panel';
 
 export default class AlternativesPanel extends BaseAlternativesPanel {
@@ -8,6 +10,10 @@ export default class AlternativesPanel extends BaseAlternativesPanel {
         this.root = root;
     }
 
+    resource(...paths: string[]): string {
+        return vscode.Uri.file(path.join(this.root, ...paths)).with({scheme: 'vscode-resource'}).toString();
+    }
+
     html(): string {
         return `<!DOCTYPE html>
 <html lang="en">
@@ -15,19 +21,17 @@ export default class AlternativesPanel extends BaseAlternativesPanel {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="vscode-resource:${this.root}/css/fontawesome.min.css" />
+    <link rel="stylesheet" href="${this.resource('css', 'fontawesome.min.css')}" />
     <style>
 @font-face {
     font-family: "Font Awesome 5 Free";
     font-style: normal;
     font-weight: 900;
     font-display: auto;
-    src: url(vscode-resource:${this.root}/fonts/fa-solid-900.eot);
-    src: url(vscode-resource:${this.root}/fonts/fa-solid-900.eot?#iefix) format("embedded-opentype"),
-            url(vscode-resource:${this.root}/fonts/fa-solid-900.woff2) format("woff2"),
-            url(vscode-resource:${this.root}/fonts/fa-solid-900.woff) format("woff"),
-            url(vscode-resource:${this.root}/fonts/fa-solid-900.ttf) format("truetype"),
-            url(vscode-resource:${this.root}/fonts/fa-solid-900.svg#fontawesome) format("svg");
+    src: url(${this.resource('fonts', 'fa-solid-900.eot')});
+    src: url(${this.resource('fonts', 'fa-solid-900.woff2')}) format("woff2"),
+            url(${this.resource('fonts', 'fa-solid-900.woff')}) format("woff"),
+            url(${this.resource('fonts', 'fa-solid-900.ttf')}) format("truetype");
 }
 
 .fa, .fas {
@@ -36,17 +40,17 @@ export default class AlternativesPanel extends BaseAlternativesPanel {
 }
     </style>
 
-    <link rel="stylesheet" href="vscode-resource:${this.root}/build/alternatives-panel.css" />
+    <link rel="stylesheet" href="${this.resource('build', 'alternatives-panel.css')}" />
   </head>
 
   <body>
     ${super.html()}
-    <script src="vscode-resource:${this.root}/build/alternatives.js"></script>
+    <script src="${this.resource('build', 'alternatives.js')}"></script>
   </body>
 </html>`;
     }
 
     logo(): string {
-        return `<img src="vscode-resource:${this.root}/img/wordmark.png" />`;
+        return `<img src="${this.resource('img', 'wordmark.png')}" />`;
     }
 }
