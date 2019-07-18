@@ -31,7 +31,7 @@
     },
     "scripts": {
         "vscode:prepublish": "webpack --mode production",
-        "compile": "webpack --mode production",
+        "compile": "sass ../serenade-editor-shared/alternatives-panel.scss ../serenade-editor-shared/build/alternatives-panel.css && webpack --mode production",
         "dev": "webpack --mode development --watch",
         "watch": "",
         "postinstall": "node ./node_modules/vscode/bin/install",

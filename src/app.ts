@@ -22,11 +22,9 @@ export default class App extends BaseApp {
     handleMessage(message: any) {
         if (message.event === 'sendIPC') {
             this.ipc!.send(message.type, message.data);
-        }
-        else if (message.event === 'setState') {
+        } else if (message.event === 'setState') {
             this.state!.set(message.key, message.value);
-        }
-        else if (message.event === 'showDocsPanel') {
+        } else if (message.event === 'showDocsPanel') {
             // don't show the same panel multiple times
             if (!this.state!.get(`docs-${message.url}`)) {
                 this.showDocsPanel(message.url);
@@ -37,7 +35,10 @@ export default class App extends BaseApp {
     showDocsPanel(url: string) {
         const docsPanel = new DocsPanel(this.context.extensionPath, url);
         const docsWebviewPanel = vscode.window.createWebviewPanel(
-            `serenade-${url}`, 'Serenade Docs', vscode.ViewColumn.Three, {enableScripts: true}
+            `serenade-${url}`,
+            'Serenade Docs',
+            vscode.ViewColumn.Three,
+            { enableScripts: true }
         );
         docsWebviewPanel.onDidDispose(() => {
             this.state!.set(`docs-${url}`, false);
@@ -53,7 +54,7 @@ export default class App extends BaseApp {
             'serenade',
             'Serenade',
             vscode.ViewColumn.Two,
-            {enableScripts: true, localResourceRoots: [vscode.Uri.file(root)], retainContextWhenHidden: true}
+            { enableScripts: true, localResourceRoots: [vscode.Uri.file(root)], retainContextWhenHidden: true }
         );
 
         this.state = new VSStateManager([alternativesWebviewPanel.webview]);
@@ -68,9 +69,13 @@ export default class App extends BaseApp {
             this.onDestroy();
         });
 
-        alternativesWebviewPanel.webview.onDidReceiveMessage(message => {
-            this.handleMessage(message);
-        }, undefined, this.context.subscriptions);
+        alternativesWebviewPanel.webview.onDidReceiveMessage(
+            message => {
+                this.handleMessage(message);
+            },
+            undefined,
+            this.context.subscriptions
+        );
 
         this.run();
     }
