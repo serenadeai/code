@@ -57,15 +57,18 @@ export default class CommandHandler implements CommandHandlerBase {
             }
         }
 
-        editor.edit(edit => {
-            var firstLine = editor.document.lineAt(0);
-            var lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-            var textRange = new vscode.Range(
-                0, firstLine.range.start.character, editor.document.lineCount - 1, lastLine.range.end.character
-            );
 
-            edit.replace(textRange, source);
-        });
+        if (source != editor.document.getText()) {
+            editor.edit(edit => {
+                var firstLine = editor.document.lineAt(0);
+                var lastLine = editor.document.lineAt(editor.document.lineCount - 1);
+                var textRange = new vscode.Range(
+                    0, firstLine.range.start.character, editor.document.lineCount - 1, lastLine.range.end.character
+                );
+
+                edit.replace(textRange, source);
+            });
+        }
 
         editor.selections = [new vscode.Selection(row, column, row, column)];
         await this.scrollToCursor();
@@ -277,6 +280,10 @@ export default class CommandHandler implements CommandHandlerBase {
     async COMMAND_TYPE_PAUSE(_data: any): Promise<any> {
         this.state.set('listening', false);
         this.state.set('status', 'Paused');
+    }
+
+    async COMMAND_TYPE_PING(_data: any): Promise<any> {
+        this.app.ipc!.send('PING', {});
     }
 
     async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
