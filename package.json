@@ -6,6 +6,7 @@
     "publisher": "serenade",
     "repository": "https://github.com/serenadeai/code",
     "version": "1.0.0",
+    "extensionKind": "ui",
     "engines": {
         "vscode": "^1.33.0"
     },

@@ -279,7 +279,6 @@ export default class CommandHandler implements CommandHandlerBase {
 
     async COMMAND_TYPE_PAUSE(_data: any): Promise<any> {
         this.state.set('listening', false);
-        this.state.set('status', 'Paused');
     }
 
     async COMMAND_TYPE_PING(_data: any): Promise<any> {
