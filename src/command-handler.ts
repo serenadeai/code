@@ -2,26 +2,21 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import App from './app';
-import CommandHandlerBase from './shared/command-handler';
+import BaseCommandHandler from './shared/command-handler';
+import * as diff from './shared/diff';
 import StateManager from './shared/state-manager';
 
-export default class CommandHandler implements CommandHandlerBase {
+export default class CommandHandler extends BaseCommandHandler {
     private app: App;
     private state: StateManager;
     private webviewPanel: vscode.WebviewPanel;
     private pendingFiles: vscode.Uri[] = [];
 
     constructor(app: App, state: StateManager, webviewPanel: vscode.WebviewPanel) {
+        super();
         this.app = app;
         this.state = state;
         this.webviewPanel = webviewPanel;
-    }
-
-    private async focus() {
-        const index = this.webviewPanel.viewColumn;
-        const column = index === 2 ? 'First' : 'Second';
-        vscode.commands.executeCommand(`workbench.action.focus${column}EditorGroup`);
-        await this.uiDelay();
     }
 
     private openPendingFileAtIndex(index: number) {
@@ -33,32 +28,45 @@ export default class CommandHandler implements CommandHandlerBase {
         this.pendingFiles = [];
     }
 
-    private async scrollToCursor() {
+    async focus(): Promise<any> {
+        this.app.focus();
+        await this.uiDelay();
+    }
+
+    getActiveEditorText(): string|undefined {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return undefined;
+        }
+
+        return editor.document.getText();
+    }
+
+    getState() {
+        return this.state;
+    }
+
+    async scrollToCursor(): Promise<any> {
         const editor = vscode.window.activeTextEditor;
         if (editor !== undefined) {
-            await vscode.commands.executeCommand('revealLine', {lineNumber: editor.selection.start.line, at: 'center'});
+            const cursor = editor.selection.start.line;
+            if (editor.visibleRanges.length > 0) {
+                const range = editor.visibleRanges[0];
+                const buffer = 5;
+                if (cursor < range.start.line + buffer || cursor > range.end.line - buffer) {
+                    await vscode.commands.executeCommand('revealLine', {lineNumber: cursor, at: 'center'});
+                }
+            }
         }
     }
 
-    private async setSourceAndCursor(source: string, cursor: number) {
+    setSourceAndCursor(before: string, source: string, row: number, column: number) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
         }
 
-        // iterate until the given substring index, incrementing rows and columns as we go
-        let row = 0;
-        let column = 0;
-        for (let i = 0; i < cursor; i++) {
-            column++;
-            if (source[i] === '\n') {
-                row++;
-                column = 0;
-            }
-        }
-
-
-        if (source != editor.document.getText()) {
+        if (before != source) {
             editor.edit(edit => {
                 var firstLine = editor.document.lineAt(0);
                 var lastLine = editor.document.lineAt(editor.document.lineCount - 1);
@@ -71,15 +79,6 @@ export default class CommandHandler implements CommandHandlerBase {
         }
 
         editor.selections = [new vscode.Selection(row, column, row, column)];
-        await this.scrollToCursor();
-    }
-
-    private async uiDelay() {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve();
-            }, 100);
-        });
     }
 
     async COMMAND_TYPE_CANCEL(_data: any): Promise<any> {
@@ -115,7 +114,7 @@ export default class CommandHandler implements CommandHandlerBase {
 
     async COMMAND_TYPE_DIFF(data: any): Promise<any> {
         await this.focus();
-        await this.setSourceAndCursor(data.source, data.cursor);
+        await this.updateEditor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
@@ -271,7 +270,7 @@ export default class CommandHandler implements CommandHandlerBase {
                 updatedCursor--;
             }
 
-            this.setSourceAndCursor(
+            this.updateEditor(
                 source.substring(0, insertionPoint) + text + source.substring(insertionPoint), updatedCursor
             );
         });
@@ -317,7 +316,7 @@ export default class CommandHandler implements CommandHandlerBase {
 
     async COMMAND_TYPE_SNIPPET_EXECUTED(data: any): Promise<any> {
         await this.focus();
-        await this.setSourceAndCursor(data.source, data.cursor);
+        await this.updateEditor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
@@ -341,7 +340,7 @@ export default class CommandHandler implements CommandHandlerBase {
 
     async COMMAND_TYPE_USE(data: any): Promise<any> {
         let index = data.index ? data.index - 1 : 0;
-        this.state.set('highlighted', index);
+        this.state.set('highlightedAlternative', index);
         let alternatives = this.state.get('alternatives');
         if ('type' in alternatives && alternatives.type === 'files') {
             this.openPendingFileAtIndex(index);

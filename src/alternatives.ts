@@ -10,21 +10,6 @@ class Alternatives extends BaseAlternatives {
         document.head.appendChild(element);
     }
 
-    eventHandlers(): {[event: string]: any} {
-        return {
-            alternatives: this.onAlternatives,
-            appState: this.onAppState,
-            highlighted: this.onHighlighted,
-            listening: this.onListening,
-            loading: this.onLoading,
-            loginError: this.onLoginError,
-            nuxCompleted: this.onNuxCompleted,
-            nuxStep: this.onNuxStep,
-            'status': this.onStatus,
-            volume: this.onVolume
-        };
-    }
-
     getLoginFields() {
         return {
             email: (this.$('.input-login-email') as HTMLInputElement).value,
