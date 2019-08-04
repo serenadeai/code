@@ -7,15 +7,13 @@ import * as diff from './shared/diff';
 import StateManager from './shared/state-manager';
 
 export default class CommandHandler extends BaseCommandHandler {
-    private app: App;
-    private state: StateManager;
+    private vscodeApp: App;
     private webviewPanel: vscode.WebviewPanel;
     private pendingFiles: vscode.Uri[] = [];
 
-    constructor(app: App, state: StateManager, webviewPanel: vscode.WebviewPanel) {
-        super();
-        this.app = app;
-        this.state = state;
+    constructor(vscodeApp: App, state: StateManager, webviewPanel: vscode.WebviewPanel) {
+        super(vscodeApp, state);
+        this.vscodeApp = vscodeApp;
         this.webviewPanel = webviewPanel;
     }
 
@@ -29,7 +27,7 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     async focus(): Promise<any> {
-        this.app.focus();
+        this.vscodeApp.focus();
         await this.uiDelay();
     }
 
@@ -79,10 +77,6 @@ export default class CommandHandler extends BaseCommandHandler {
         }
 
         editor.selections = [new vscode.Selection(row, column, row, column)];
-    }
-
-    async COMMAND_TYPE_CANCEL(_data: any): Promise<any> {
-        this.state.set('alternatives', {suggestions: true});
     }
 
     async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
@@ -160,18 +154,6 @@ export default class CommandHandler extends BaseCommandHandler {
     async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
         await this.focus();
         vscode.commands.executeCommand('editor.action.revealDefinition');
-    }
-
-    async COMMAND_TYPE_INVALID(_data: any): Promise<any> {
-    }
-
-    async COMMAND_TYPE_LOGIN(data: any): Promise<any> {
-        if (data.text !== '' && data.text !== undefined) {
-            this.state.set('appState', 'READY');
-        }
-        else {
-            this.state.set('loginError', 'Invalid email/password.');
-        }
     }
 
     async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
@@ -276,14 +258,6 @@ export default class CommandHandler extends BaseCommandHandler {
         });
     }
 
-    async COMMAND_TYPE_PAUSE(_data: any): Promise<any> {
-        this.state.set('listening', false);
-    }
-
-    async COMMAND_TYPE_PING(_data: any): Promise<any> {
-        this.app.ipc!.send('PING', {});
-    }
-
     async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
         await this.focus();
         vscode.commands.executeCommand('workbench.action.previousEditor');
@@ -298,25 +272,6 @@ export default class CommandHandler extends BaseCommandHandler {
     async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
         await this.focus();
         vscode.commands.executeCommand('workbench.action.files.save');
-    }
-
-    async COMMAND_TYPE_SET_EDITOR_STATUS(data: any): Promise<any> {
-        const text = data.text;
-        if (data.volume) {
-            this.state.set('volume', Math.floor(data.volume * 100));
-        }
-
-        this.state.set('status', text);
-    }
-
-    async COMMAND_TYPE_SNIPPET(data: any): Promise<any> {
-        this.state.set('loading', true);
-        this.app.ipc!.send('SEND_TEXT', {text: 'add executed snippet ' + data.text});
-    }
-
-    async COMMAND_TYPE_SNIPPET_EXECUTED(data: any): Promise<any> {
-        await this.focus();
-        await this.updateEditor(data.source, data.cursor);
     }
 
     async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
