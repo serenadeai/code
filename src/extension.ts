@@ -6,12 +6,12 @@ let activated = false;
 
 export function activate(context: vscode.ExtensionContext) {
     let shown = false;
-    let app = new App(context, () => {
+    app = new App(context, () => {
         shown = false;
     });
 
     const show = () => {
-        if (!shown) {
+        if (!shown && app) {
             app.start();
         }
 
@@ -35,7 +35,9 @@ export function activate(context: vscode.ExtensionContext) {
         show();
         setTimeout(() => {
             vscode.window.showInputBox({placeHolder: 'Enter a Serenade command.'}).then(result => {
-                app.ipc!.send('SEND_TEXT', {text: result});
+                if (app) {
+                    app.ipc!.send('SEND_TEXT', {text: result});
+                }
             });
         }, delay);
     }));
@@ -44,4 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+    if (app) {
+        app.destroy();
+    }
 }
