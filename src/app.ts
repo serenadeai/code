@@ -78,7 +78,7 @@ export default class App extends BaseApp {
         this.state = new VSStateManager([this.alternativesWebviewPanel.webview]);
         this.highlight = new Highlight(this.state);
         this.clientRunner = new ClientRunnerFactory(this.state, this.settings).get();
-        const commandHandler = new CommandHandler(this, this.state, this.alternativesWebviewPanel);
+        const commandHandler = new CommandHandler(this, this.state, this.settings, this.alternativesWebviewPanel);
         this.ipc = new IPC(this.state, commandHandler, this.clientRunner, 'Code');
 
         this.alternativesWebviewPanel.webview.html = alternativesPanel.html();

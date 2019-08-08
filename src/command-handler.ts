@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import App from './app';
 import BaseCommandHandler from './shared/command-handler';
 import * as diff from './shared/diff';
+import Settings from './shared/settings';
 import StateManager from './shared/state-manager';
 
 export default class CommandHandler extends BaseCommandHandler {
@@ -11,8 +12,8 @@ export default class CommandHandler extends BaseCommandHandler {
     private webviewPanel: vscode.WebviewPanel;
     private pendingFiles: vscode.Uri[] = [];
 
-    constructor(vscodeApp: App, state: StateManager, webviewPanel: vscode.WebviewPanel) {
-        super(vscodeApp, state);
+    constructor(vscodeApp: App, state: StateManager, settings: Settings, webviewPanel: vscode.WebviewPanel) {
+        super(vscodeApp, state, settings);
         this.vscodeApp = vscodeApp;
         this.webviewPanel = webviewPanel;
     }
