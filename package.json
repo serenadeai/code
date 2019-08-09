@@ -5,7 +5,7 @@
     "license": "UNLICENSED",
     "publisher": "serenade",
     "repository": "https://github.com/serenadeai/code",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "extensionKind": "ui",
     "engines": {
         "vscode": "^1.33.0"
