@@ -4,13 +4,7 @@ Serenade enables you to write code by speaking rather than typing. With natural 
 
 [![Serenade Screenshot](https://cdn.serenade.ai/img/screenshot.png)](https://serenade.ai/)
 
-## Getting Started
-
-To enable Serenade, open the Command Palette and run the command `Enable Serenade`.
-
-Check out the [Serenade guide](https://docs.serenade.ai/) to start learning how to use Serenade.
-
-## Features
+## Take a break from typing
 
 ### Speak naturally.
 
@@ -36,3 +30,6 @@ Use Serenade to complement your existing workflow, or write code entirely with v
 
 Use the same commands across multiple languages: Python, JavaScript, Java, and more on the way.
 
+## Getting Started
+
+Check out the [Serenade guide](https://docs.serenade.ai/) to start learning how to use Serenade.

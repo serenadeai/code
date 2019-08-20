@@ -1,313 +1,303 @@
-import * as path from 'path';
-import * as vscode from 'vscode';
+import * as path from "path";
+import * as vscode from "vscode";
 
-import App from './app';
-import BaseCommandHandler from './shared/command-handler';
-import * as diff from './shared/diff';
-import Settings from './shared/settings';
-import StateManager from './shared/state-manager';
+import App from "./app";
+import BaseCommandHandler from "./shared/command-handler";
+import * as diff from "./shared/diff";
+import Settings from "./shared/settings";
 
 export default class CommandHandler extends BaseCommandHandler {
-    private vscodeApp: App;
-    private webviewPanel: vscode.WebviewPanel;
-    private pendingFiles: vscode.Uri[] = [];
+  private pendingFiles: vscode.Uri[] = [];
+  private errorColor: string = "255, 99, 71";
+  private successColor: string = "43, 161, 67";
+  private activeEditor?: vscode.TextEditor;
 
-    constructor(vscodeApp: App, state: StateManager, settings: Settings, webviewPanel: vscode.WebviewPanel) {
-        super(vscodeApp, state, settings);
-        this.vscodeApp = vscodeApp;
-        this.webviewPanel = webviewPanel;
+  private openPendingFileAtIndex(index: number) {
+    if (index < 0 || index >= this.pendingFiles.length) {
+      return;
     }
 
-    private openPendingFileAtIndex(index: number) {
-        if (index < 0 || index >= this.pendingFiles.length) {
-            return;
-        }
+    vscode.workspace.openTextDocument(this.pendingFiles[index]);
+    this.pendingFiles = [];
+  }
 
-        vscode.workspace.openTextDocument(this.pendingFiles[index]);
-        this.pendingFiles = [];
+  async focus(): Promise<any> {
+    if (!this.activeEditor) {
+      return;
     }
 
-    async focus(): Promise<any> {
-        this.vscodeApp.focus();
-        await this.uiDelay();
+    vscode.window.showTextDocument(this.activeEditor!.document);
+    await this.uiDelay();
+  }
+
+  getActiveEditorText(): string | undefined {
+    if (!this.activeEditor) {
+      return undefined;
     }
 
-    getActiveEditorText(): string|undefined {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return undefined;
-        }
+    return this.activeEditor!.document.getText();
+  }
 
-        return editor.document.getText();
+  highlightRanges(ranges: diff.DiffRange[]) {
+    const duration = 250;
+    const steps = [1, 2, 3, 4, 3, 2, 1];
+    const step = duration / steps.length;
+    const editor = vscode.window.activeTextEditor;
+    if (!editor || ranges.length == 0) {
+      return;
     }
 
-    getState() {
-        return this.state;
-    }
+    for (const range of ranges) {
+      console.log(range);
 
-    async scrollToCursor(): Promise<any> {
-        const editor = vscode.window.activeTextEditor;
-        if (editor !== undefined) {
-            const cursor = editor.selection.start.line;
-            if (editor.visibleRanges.length > 0) {
-                const range = editor.visibleRanges[0];
-                const buffer = 5;
-                if (cursor < range.start.line + buffer || cursor > range.end.line - buffer) {
-                    await vscode.commands.executeCommand('revealLine', {lineNumber: cursor, at: 'center'});
-                }
+      const decorations = steps.map(e =>
+        vscode.window.createTextEditorDecorationType({
+          backgroundColor: `rgba(${
+            range.diffRangeType == diff.DiffRangeType.Delete ? this.errorColor : this.successColor
+          }, 0.${e})`,
+          isWholeLine: range.diffHighlightType == diff.DiffHighlightType.Line
+        })
+      );
+
+      // atom and vs code use different types of ranges
+      if (range.diffHighlightType == diff.DiffHighlightType.Line) {
+        range.stop.row--;
+      }
+
+      for (let i = 0; i < steps.length; i++) {
+        setTimeout(() => {
+          this.activeEditor!.setDecorations(decorations[i], [
+            new vscode.Range(range.start.row, range.start.column, range.stop.row, range.stop.column)
+          ]);
+
+          setTimeout(() => {
+            editor.setDecorations(decorations[i], []);
+            if (i == steps.length - 1) {
+              decorations.map(e => e.dispose());
             }
+          }, step);
+        }, i * step);
+      }
+    }
+  }
+
+  pollActiveEditor() {
+    setInterval(() => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      this.activeEditor = editor;
+    }, 1000);
+  }
+
+  async scrollToCursor(): Promise<any> {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    const cursor = this.activeEditor!.selection.start.line;
+    if (this.activeEditor!.visibleRanges.length > 0) {
+      const range = this.activeEditor!.visibleRanges[0];
+      const buffer = 5;
+      if (cursor < range.start.line + buffer || cursor > range.end.line - buffer) {
+        await vscode.commands.executeCommand("revealLine", { lineNumber: cursor, at: "center" });
+      }
+    }
+  }
+
+  setSourceAndCursor(before: string, source: string, row: number, column: number) {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    if (before != source) {
+      this.activeEditor!.edit(edit => {
+        var firstLine = this.activeEditor!.document.lineAt(0);
+        var lastLine = this.activeEditor!.document.lineAt(
+          this.activeEditor!.document.lineCount - 1
+        );
+        var textRange = new vscode.Range(
+          0,
+          firstLine.range.start.character,
+          this.activeEditor!.document.lineCount - 1,
+          lastLine.range.end.character
+        );
+
+        edit.replace(textRange, source);
+      });
+    }
+
+    this.activeEditor!.selections = [new vscode.Selection(row, column, row, column)];
+  }
+
+  async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    await this.uiDelay();
+  }
+
+  async COMMAND_TYPE_CLOSE_WINDOW(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    await this.uiDelay();
+  }
+
+  async COMMAND_TYPE_COPY(data: any): Promise<any> {
+    if (data && data.text) {
+      vscode.env.clipboard.writeText(data.text);
+    }
+
+    await this.uiDelay();
+  }
+
+  async COMMAND_TYPE_CREATE_TAB(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+    await this.uiDelay();
+  }
+
+  async COMMAND_TYPE_DIFF(data: any): Promise<any> {
+    await this.updateEditor(data.source, data.cursor);
+  }
+
+  async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    let result = { source: "", cursor: 0, filename: "" };
+    const position = this.activeEditor!.selection.active;
+    const row = position.line;
+    const column = position.character;
+    const text = this.activeEditor!.document.getText();
+
+    // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
+    let cursor = 0;
+    let currentRow = 0;
+    let currentColumn = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (currentRow === row) {
+        if (currentColumn === column) {
+          break;
         }
+
+        currentColumn++;
+      }
+
+      if (text[i] === "\n") {
+        currentRow++;
+      }
+
+      cursor++;
     }
 
-    setSourceAndCursor(before: string, source: string, row: number, column: number) {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
+    result.source = text;
+    result.cursor = cursor;
+    result.filename = path.basename(this.activeEditor!.document.fileName);
+    return result;
+  }
 
-        if (before != source) {
-            editor.edit(edit => {
-                var firstLine = editor.document.lineAt(0);
-                var lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-                var textRange = new vscode.Range(
-                    0, firstLine.range.start.character, editor.document.lineCount - 1, lastLine.range.end.character
-                );
+  async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("editor.action.revealDefinition");
+  }
 
-                edit.replace(textRange, source);
-            });
-        }
+  async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("workbench.action.nextEditor");
+    await this.uiDelay();
+  }
 
-        editor.selections = [new vscode.Selection(row, column, row, column)];
-    }
-
-    async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_CLOSE_WINDOW(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_COPY(data: any): Promise<any> {
-        await this.focus();
-        if (data && data.text) {
-            vscode.env.clipboard.writeText(data.text);
-        }
-
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_CREATE_TAB(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('workbench.action.files.newUntitledFile');
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_DIFF(data: any): Promise<any> {
-        await this.focus();
-        await this.updateEditor(data.source, data.cursor);
-    }
-
-    async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
-        let result = {source: '', cursor: 0, filename: ''};
-
-        await this.focus();
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-
-        const position = editor.selection.active;
-        const row = position.line;
-        const column = position.character;
-        const text = editor.document.getText();
-
-        // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
-        let cursor = 0;
-        let currentRow = 0;
-        let currentColumn = 0;
-        for (let i = 0; i < text.length; i++) {
-            if (currentRow === row) {
-                if (currentColumn === column) {
-                    break;
-                }
-
-                currentColumn++;
+  async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
+    await this.focus();
+    const path = (data.path as string).replace(" ", "*");
+    vscode.workspace
+      .findFiles(`*${path}*`, "{**/node_modules/**,*.class,*.jar,**/__pycache__/**}", 10)
+      .then(files => {
+        this.pendingFiles = files;
+        let prefixLength = 0;
+        if (files.length > 1) {
+          while (prefixLength < files[0].path.length) {
+            let different = false;
+            for (const f of files) {
+              if (
+                prefixLength < f.path.length &&
+                f.path[prefixLength] !== files[0].path[prefixLength]
+              ) {
+                different = true;
+                break;
+              }
             }
 
-            if (text[i] === '\n') {
-                currentRow++;
+            if (different) {
+              break;
             }
 
-            cursor++;
+            prefixLength++;
+          }
         }
 
-        result.source = text;
-        result.cursor = cursor;
-        result.filename = path.basename(editor.document.fileName);
-        return result;
-    }
-
-    async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('editor.action.revealDefinition');
-    }
-
-    async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('workbench.action.nextEditor');
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
-        await this.focus();
-        const path = (data.path as string).replace(' ', '*');
-        vscode.workspace.findFiles(
-                            `*${path}*`, '{**/node_modules/**,*.class,*.jar,**/__pycache__/**}', 10
-        ).then(files => {
-            this.pendingFiles = files;
-            let prefixLength = 0;
-            if (files.length > 1) {
-                while (prefixLength < files[0].path.length) {
-                    let different = false;
-                    for (const f of files) {
-                        if (prefixLength < f.path.length && f.path[prefixLength] !== files[0].path[prefixLength]) {
-                            different = true;
-                            break;
-                        }
-                    }
-
-                    if (different) {
-                        break;
-                    }
-
-                    prefixLength++;
-                }
-            }
-
-            const alternatives = files.map(e => {
-                return {description: `open <code>${e.path.substring(prefixLength)}</code>`};
-            });
-
-            this.state.set('alternatives', {alternatives: alternatives, alternativeType: 'files'});
+        const alternatives = files.map(e => {
+          return { description: `open <code>${e.path.substring(prefixLength)}</code>` };
         });
+      });
+  }
+
+  async COMMAND_TYPE_PASTE(data: any): Promise<any> {
+    if (!this.activeEditor) {
+      return;
     }
 
-    async COMMAND_TYPE_PASTE(data: any): Promise<any> {
-        await this.focus();
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
+    vscode.env.clipboard.readText().then(text => {
+      const source = this.activeEditor!.document.getText();
+      this.pasteText(source, data, text);
+    });
+  }
 
-        vscode.env.clipboard.readText().then(text => {
-            const source = editor.document.getText();
-            let insertionPoint = data.cursor || 0;
+  async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("workbench.action.previousEditor");
+    await this.uiDelay();
+  }
 
-            // if we specify a direction, it means that we want to paste as a line, so add a newline
-            let updatedCursor = insertionPoint;
-            if (data.direction && !text.endsWith('\n')) {
-                text += '\n';
-            }
+  async COMMAND_TYPE_REDO(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("redo");
+    await this.scrollToCursor();
+  }
 
-            // paste on a new line if a direction is specified or we're pasting a full line
-            if (text.endsWith('\n') || data.direction) {
-                // default to paste below if there's a newline at the end
-                data.direction = data.direction || 'below';
+  async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("workbench.action.files.save");
+  }
 
-                // for below (the default), move the cursor to the start of the next line
-                if (data.direction === 'below') {
-                    for (; insertionPoint < source.length; insertionPoint++) {
-                        if (source[insertionPoint] === '\n') {
-                            insertionPoint++;
-                            break;
-                        }
-                    }
-                }
+  async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
+    await this.focus();
+    const direction = data.direction.toLowerCase();
+    const split = direction.charAt(0).toUpperCase() + direction.slice(1);
+    vscode.commands.executeCommand(`workbench.action.${split}`);
+    await this.uiDelay();
+  }
 
-                // for paste above, go to the start of the current line
-                else if (data.direction === 'above') {
-                    // if we're at the end of a line, then move the cursor back one, or else we'll paste below
-                    if (source[insertionPoint] === '\n' && insertionPoint > 0) {
-                        insertionPoint--;
-                    }
+  async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
+    await this.uiDelay();
+  }
 
-                    for (; insertionPoint >= 0; insertionPoint--) {
-                        if (source[insertionPoint] === '\n') {
-                            insertionPoint++;
-                            break;
-                        }
-                    }
-                }
+  async COMMAND_TYPE_UNDO(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("undo");
+    await this.scrollToCursor();
+  }
 
-                updatedCursor = insertionPoint;
-            }
-
-            // move the cursor to the end of the pasted text
-            updatedCursor += text.length;
-            if (text.endsWith('\n')) {
-                updatedCursor--;
-            }
-
-            this.updateEditor(
-                source.substring(0, insertionPoint) + text + source.substring(insertionPoint), updatedCursor
-            );
-        });
-    }
-
-    async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('workbench.action.previousEditor');
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_REDO(_data: any): Promise<any> {
-        vscode.commands.executeCommand('redo');
-        await this.scrollToCursor();
-    }
-
-    async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand('workbench.action.files.save');
-    }
-
-    async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
-        await this.focus();
-        const direction = data.direction.toLowerCase();
-        const split = direction.charAt(0).toUpperCase() + direction.slice(1);
-        vscode.commands.executeCommand(`workbench.action.${split}`);
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
-        await this.focus();
-        vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
-        await this.uiDelay();
-    }
-
-    async COMMAND_TYPE_UNDO(_data: any): Promise<any> {
-        vscode.commands.executeCommand('undo');
-        await this.scrollToCursor();
-    }
-
-    async COMMAND_TYPE_USE(data: any): Promise<any> {
-        let index = data.index ? data.index - 1 : 0;
-        this.state.set('highlightedAlternative', index);
-        let alternatives = this.state.get('alternatives');
-        if ('type' in alternatives && alternatives.type === 'files') {
-            this.openPendingFileAtIndex(index);
-        }
-    }
-
-    async COMMAND_TYPE_WINDOW(data: any): Promise<any> {
-        await this.focus();
-        const direction = data.direction.toLowerCase();
-        const split = direction.charAt(0).toUpperCase() + direction.slice(1);
-        vscode.commands.executeCommand(`workspace.action.focus${split}Group`);
-        await this.uiDelay();
-    }
+  async COMMAND_TYPE_WINDOW(data: any): Promise<any> {
+    await this.focus();
+    const direction = data.direction.toLowerCase();
+    const split = direction.charAt(0).toUpperCase() + direction.slice(1);
+    vscode.commands.executeCommand(`workspace.action.focus${split}Group`);
+    await this.uiDelay();
+  }
 }
