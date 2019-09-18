@@ -7,18 +7,13 @@ import * as diff from "./shared/diff";
 import Settings from "./shared/settings";
 
 export default class CommandHandler extends BaseCommandHandler {
-  private pendingFiles: vscode.Uri[] = [];
-  private errorColor: string = "255, 99, 71";
-  private successColor: string = "43, 161, 67";
   private activeEditor?: vscode.TextEditor;
+  private errorColor: string = "255, 99, 71";
+  private openFileList: any[] = [];
+  private successColor: string = "43, 161, 67";
 
-  private openPendingFileAtIndex(index: number) {
-    if (index < 0 || index >= this.pendingFiles.length) {
-      return;
-    }
-
-    vscode.workspace.openTextDocument(this.pendingFiles[index]);
-    this.pendingFiles = [];
+  private ignorePatterns(): string {
+    return `{${this.settings.getIgnore().join(",")}}`;
   }
 
   async focus(): Promise<any> {
@@ -39,7 +34,7 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   highlightRanges(ranges: diff.DiffRange[]) {
-    const duration = 250;
+    const duration = 300;
     const steps = [1, 2, 3, 4, 3, 2, 1];
     const step = duration / steps.length;
     const editor = vscode.window.activeTextEditor;
@@ -48,8 +43,6 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     for (const range of ranges) {
-      console.log(range);
-
       const decorations = steps.map(e =>
         vscode.window.createTextEditorDecorationType({
           backgroundColor: `rgba(${
@@ -114,11 +107,12 @@ export default class CommandHandler extends BaseCommandHandler {
 
     if (before != source) {
       this.activeEditor!.edit(edit => {
-        var firstLine = this.activeEditor!.document.lineAt(0);
-        var lastLine = this.activeEditor!.document.lineAt(
+        const firstLine = this.activeEditor!.document.lineAt(0);
+        const lastLine = this.activeEditor!.document.lineAt(
           this.activeEditor!.document.lineCount - 1
         );
-        var textRange = new vscode.Range(
+
+        const textRange = new vscode.Range(
           0,
           firstLine.range.start.character,
           this.activeEditor!.document.lineCount - 1,
@@ -158,16 +152,18 @@ export default class CommandHandler extends BaseCommandHandler {
     await this.uiDelay();
   }
 
-  async COMMAND_TYPE_DIFF(data: any): Promise<any> {
-    await this.updateEditor(data.source, data.cursor);
-  }
-
   async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
     if (!this.activeEditor) {
       return;
     }
 
-    let result = { source: "", cursor: 0, filename: "" };
+    let result = {
+      source: "",
+      cursor: 0,
+      filename: "",
+      files: this.openFileList.map((e: any) => e.path),
+      roots: [vscode.workspace.rootPath]
+    };
     const position = this.activeEditor!.selection.active;
     const row = position.line;
     const column = position.character;
@@ -211,38 +207,22 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
+    vscode.workspace
+      .openTextDocument(this.openFileList[data.index || 0])
+      .then(doc => vscode.window.showTextDocument(doc));
+  }
+
+  async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
     await this.focus();
     const path = (data.path as string).replace(" ", "*");
-    vscode.workspace
-      .findFiles(`*${path}*`, "{**/node_modules/**,*.class,*.jar,**/__pycache__/**}", 10)
-      .then(files => {
-        this.pendingFiles = files;
-        let prefixLength = 0;
-        if (files.length > 1) {
-          while (prefixLength < files[0].path.length) {
-            let different = false;
-            for (const f of files) {
-              if (
-                prefixLength < f.path.length &&
-                f.path[prefixLength] !== files[0].path[prefixLength]
-              ) {
-                different = true;
-                break;
-              }
-            }
+    vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 10).then(files => {
+      this.openFileList = files;
 
-            if (different) {
-              break;
-            }
-
-            prefixLength++;
-          }
-        }
-
-        const alternatives = files.map(e => {
-          return { description: `open <code>${e.path.substring(prefixLength)}</code>` };
-        });
-      });
+      // the current request has to complete before we can send a new one
+      setTimeout(() => {
+        this.ipcClient!.send("mic", { type: "sendText", text: `open executed ${data.path};` });
+      }, 100);
+    });
   }
 
   async COMMAND_TYPE_PASTE(data: any): Promise<any> {
