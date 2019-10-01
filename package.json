@@ -5,13 +5,17 @@
   "license": "MIT",
   "publisher": "serenade",
   "repository": "https://github.com/serenadeai/code",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "extensionKind": "ui",
   "engines": {
     "vscode": "^1.33.0"
   },
-  "categories": ["Other"],
-  "activationEvents": ["*"],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
