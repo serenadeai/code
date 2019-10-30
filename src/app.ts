@@ -4,7 +4,7 @@ import BaseApp from "./shared/app";
 
 export default class App extends BaseApp {
   createCommandHandler(): CommandHandler {
-    return new CommandHandler(this.ipcClient!, this.settings!);
+    return new CommandHandler(this.settings!);
   }
 
   hideMessage() {}
@@ -32,7 +32,7 @@ export default class App extends BaseApp {
   }
 
   start() {
-    if (this.ipcServer) {
+    if (this.ipc) {
       return;
     }
 

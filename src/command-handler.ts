@@ -35,7 +35,7 @@ export default class CommandHandler extends BaseCommandHandler {
 
   highlightRanges(ranges: diff.DiffRange[]) {
     const duration = 300;
-    const steps = [1, 2, 3, 4, 3, 2, 1];
+    const steps = [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1];
     const step = duration / steps.length;
     const editor = vscode.window.activeTextEditor;
     if (!editor || ranges.length == 0) {
@@ -217,11 +217,7 @@ export default class CommandHandler extends BaseCommandHandler {
     const path = (data.path as string).replace(" ", "*");
     vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 10).then(files => {
       this.openFileList = files;
-
-      // the current request has to complete before we can send a new one
-      setTimeout(() => {
-        this.ipcClient!.send("mic", { type: "sendText", text: `open executed ${data.path};` });
-      }, 100);
+      return { type: "sendText", text: `open executed ${data.path};` };
     });
   }
 
