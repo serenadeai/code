@@ -3,6 +3,59 @@ import CommandHandler from "./command-handler";
 import BaseApp from "./shared/app";
 
 export default class App extends BaseApp {
+  private installHtml(): string {
+    return `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="style-src 'nonce-07c49590f6'">
+    <title>Serenade</title>
+    <style nonce="07c49590f6">
+
+a {
+  background: #e7b143;
+  border: none;
+  border-radius: .25rem;
+  color: rgba(0, 0, 0, 0.6);
+  display: inline-block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+  padding: .8rem 1.6rem;
+  text-decoration: none;
+  text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.1);
+  transition: background .2s ease-in-out;
+  white-space: normal;
+}
+
+a:hover {
+  color: rgba(0, 0, 0, 0.6);
+  background: #edc470;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to Serenade!</h1>
+    <p>With Serenade, you can write code faster&mdash;by speaking in plain English, rather than typing. Use Serenade as your coding assistant, or abandon your keyboard entirely.</p>
+    <p>To get started, download the Serenade app.</p>
+    <a href="https://serenade.ai/download">Download</a>
+  </body>
+</html>
+    `;
+  }
+
   createCommandHandler(): CommandHandler {
     return new CommandHandler(this.settings!);
   }
@@ -13,22 +66,14 @@ export default class App extends BaseApp {
     return 17376;
   }
 
-  showNotRunningMessage() {
-    vscode.window.showInformationMessage(
-      "Open the Serenade app to use Serenade with Visual Studio Code."
-    );
-  }
-
   showInstallMessage() {
-    vscode.window
-      .showInformationMessage(
-        "Download the new Serenade app to use Serenade with Visual Studio Code.",
-        {},
-        "Download"
-      )
-      .then(() => {
-        vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/download"));
-      });
+    const panel = vscode.window.createWebviewPanel(
+      "serenade-install",
+      "Serenade",
+      vscode.ViewColumn.Two
+    );
+
+    panel.webview.html = this.installHtml();
   }
 
   start() {
