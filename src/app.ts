@@ -91,6 +91,7 @@ document.querySelector('.download').addEventListener('click', e => {
     panel.webview.onDidReceiveMessage((message: any) => {
       if (message.type == "download") {
         vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/app"));
+        panel.dispose();
       }
     });
   }
