@@ -11,12 +11,8 @@
   "engines": {
     "vscode": "^1.33.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
+  "categories": ["Other"],
+  "activationEvents": ["*"],
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",

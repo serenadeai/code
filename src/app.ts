@@ -50,8 +50,19 @@ p {
     <h1>Welcome to Serenade!</h1>
     <p>With Serenade, you can write code faster&mdash;by speaking in plain English, rather than typing. Use Serenade as your coding assistant, or abandon your keyboard entirely.</p>
     <p>To get started, download the Serenade app.</p>
-    <a href="https://serenade.ai/download">Download</a>
+    <a class="download" href="#">Download</a>
   </body>
+  <script>
+
+const vscode = acquireVsCodeApi();
+document.querySelector('.download').addEventListener('click', e => {
+  e.preventDefault();
+  vscode.postMessage({
+    type: 'download'
+  });
+});
+
+  </script>
 </html>
     `;
   }
@@ -70,10 +81,18 @@ p {
     const panel = vscode.window.createWebviewPanel(
       "serenade-install",
       "Serenade",
-      vscode.ViewColumn.Two
+      vscode.ViewColumn.Two,
+      {
+        enableScripts: true
+      }
     );
 
     panel.webview.html = this.installHtml();
+    panel.webview.onDidReceiveMessage((message: any) => {
+      if (message.type == "download") {
+        vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/app"));
+      }
+    });
   }
 
   start() {
