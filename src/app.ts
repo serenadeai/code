@@ -49,7 +49,7 @@ p {
   <body>
     <h1>Welcome to Serenade!</h1>
     <p>With Serenade, you can write code faster&mdash;by speaking in plain English, rather than typing. Use Serenade as your coding assistant, or abandon your keyboard entirely.</p>
-    <p>To get started, download the Serenade app.</p>
+    <p>To get started, download the Serenade app and run it alongside VS Code.</p>
     <a class="download" href="#">Download</a>
   </body>
   <script>
@@ -90,7 +90,7 @@ document.querySelector('.download').addEventListener('click', e => {
     panel.webview.html = this.installHtml();
     panel.webview.onDidReceiveMessage((message: any) => {
       if (message.type == "download") {
-        vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/app"));
+        vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/request"));
         panel.dispose();
       }
     });

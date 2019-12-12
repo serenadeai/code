@@ -253,7 +253,7 @@ export default class CommandHandler extends BaseCommandHandler {
     await this.focus();
     const direction = data.direction.toLowerCase();
     const split = direction.charAt(0).toUpperCase() + direction.slice(1);
-    vscode.commands.executeCommand(`workbench.action.${split}`);
+    vscode.commands.executeCommand(`workbench.action.splitEditor${split}`);
     await this.uiDelay();
   }
 
