@@ -33,13 +33,13 @@ export default class CommandHandler extends BaseCommandHandler {
     return this.activeEditor!.document.getText();
   }
 
-  highlightRanges(ranges: diff.DiffRange[]) {
+  highlightRanges(ranges: diff.DiffRange[]): number {
     const duration = 300;
-    const steps = [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1];
+    const steps = [1, 2, 1];
     const step = duration / steps.length;
     const editor = vscode.window.activeTextEditor;
     if (!editor || ranges.length == 0) {
-      return;
+      return 0;
     }
 
     for (const range of ranges) {
@@ -64,14 +64,13 @@ export default class CommandHandler extends BaseCommandHandler {
           ]);
 
           setTimeout(() => {
-            editor.setDecorations(decorations[i], []);
-            if (i == steps.length - 1) {
-              decorations.map(e => e.dispose());
-            }
+            decorations[i].dispose();
           }, step);
         }, i * step);
       }
     }
+
+    return 400;
   }
 
   pollActiveEditor() {
@@ -98,6 +97,16 @@ export default class CommandHandler extends BaseCommandHandler {
         await vscode.commands.executeCommand("revealLine", { lineNumber: cursor, at: "center" });
       }
     }
+  }
+
+  select(startRow: number, startColumn: number, endRow: number, endColumn: number) {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    this.activeEditor!.selections = [
+      new vscode.Selection(startRow, startColumn, endRow, endColumn)
+    ];
   }
 
   setSourceAndCursor(before: string, source: string, row: number, column: number) {
