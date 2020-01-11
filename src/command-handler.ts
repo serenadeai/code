@@ -224,9 +224,9 @@ export default class CommandHandler extends BaseCommandHandler {
   async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
     await this.focus();
     const path = (data.path as string).replace(" ", "*");
-    vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 10).then(files => {
+    return vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 10).then(files => {
       this.openFileList = files;
-      return { type: "sendText", text: `open executed ${data.path};` };
+      return { type: "sendText", text: `open executed ${data.path}` };
     });
   }
 
