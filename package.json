@@ -5,7 +5,7 @@
   "license": "MIT",
   "publisher": "serenade",
   "repository": "https://github.com/serenadeai/code",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "extensionKind": "ui",
   "icon": "icon.png",
   "engines": {
