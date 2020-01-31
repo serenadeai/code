@@ -103,5 +103,6 @@ document.querySelector('.download').addEventListener('click', e => {
 
     this.run();
     (this.commandHandler! as CommandHandler).pollActiveEditor();
+    this.settings!.setCode();
   }
 }
