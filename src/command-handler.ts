@@ -224,9 +224,9 @@ export default class CommandHandler extends BaseCommandHandler {
   async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
     await this.focus();
     const path = (data.path as string).replace(" ", "*");
-    return vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 10).then(files => {
+    return vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 20).then(files => {
       this.openFileList = files;
-      return { type: "sendText", text: `open executed ${data.path}` };
+      return { type: "sendText", text: `callback open` };
     });
   }
 
@@ -268,7 +268,12 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
+    if (data.index < 0) {
+      vscode.commands.executeCommand("workbench.action.lastEditorInGroup");
+    } else {
+      vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
+    }
+
     await this.uiDelay();
   }
 
