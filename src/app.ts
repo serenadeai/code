@@ -67,15 +67,15 @@ document.querySelector('.download').addEventListener('click', e => {
     `;
   }
 
+  app(): string {
+    return "vscode";
+  }
+
   createCommandHandler(): CommandHandler {
     return new CommandHandler(this.settings!);
   }
 
   hideMessage() {}
-
-  port() {
-    return 17376;
-  }
 
   showInstallMessage() {
     const panel = vscode.window.createWebviewPanel(
@@ -104,5 +104,15 @@ document.querySelector('.download').addEventListener('click', e => {
     this.run();
     (this.commandHandler! as CommandHandler).pollActiveEditor();
     this.settings!.setCode();
+
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      this.ipc!.sendActive();
+    });
+
+    vscode.window.onDidChangeWindowState(state => {
+      if (state.focused) {
+        this.ipc!.sendActive();
+      }
+    });
   }
 }

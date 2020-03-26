@@ -173,6 +173,7 @@ export default class CommandHandler extends BaseCommandHandler {
       files: this.openFileList.map((e: any) => e.path),
       roots: [vscode.workspace.rootPath]
     };
+
     const position = this.activeEditor!.selection.active;
     const row = position.line;
     const column = position.character;
@@ -201,7 +202,10 @@ export default class CommandHandler extends BaseCommandHandler {
     result.source = text;
     result.cursor = cursor;
     result.filename = path.basename(this.activeEditor!.document.fileName);
-    return result;
+    return {
+      message: "editorState",
+      data: result
+    };
   }
 
   async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
@@ -226,7 +230,7 @@ export default class CommandHandler extends BaseCommandHandler {
     const path = (data.path as string).replace(" ", "*");
     return vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 20).then(files => {
       this.openFileList = files;
-      return { type: "sendText", text: `callback open` };
+      return { message: "sendText", data: { text: `callback open` } };
     });
   }
 
