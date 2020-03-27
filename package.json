@@ -11,16 +11,12 @@
   "engines": {
     "vscode": "^1.33.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
+  "categories": ["Other"],
+  "activationEvents": ["*"],
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
-    "compile": "sass ../serenade-editor-shared/src/global.scss ../serenade-editor-shared/build/global.css && webpack --mode production",
+    "compile": "sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
     "dev": "webpack --mode development --watch",
     "watch": "",
     "postinstall": "node ./node_modules/vscode/bin/install",

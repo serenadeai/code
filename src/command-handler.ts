@@ -12,6 +12,39 @@ export default class CommandHandler extends BaseCommandHandler {
   private openFileList: any[] = [];
   private successColor: string = "43, 161, 67";
 
+  private filenameForEditor(editor: vscode.TextEditor): string {
+    let filename = path.basename(editor.document.fileName);
+    const known = ["js", "jsx", "vue", "ts", "tsx", "java", "py", "html", "css", "less", "scss"];
+    for (const extension of known) {
+      if (filename.endsWith(`.${extension}`)) {
+        return filename;
+      }
+    }
+
+    if (!filename) {
+      filename = "file";
+    }
+
+    const languageToFilename: { [key: string]: string } = {
+      javascript: `${filename}.js`,
+      javascriptreact: `${filename}.js`,
+      typescript: `${filename}.ts`,
+      typescriptreact: `${filename}.tsx`,
+      java: `${filename}.java`,
+      python: `${filename}.py`,
+      html: `${filename}.html`,
+      css: `${filename}.css`,
+      less: `${filename}.less`,
+      scss: `${filename}.scss`
+    };
+
+    if (languageToFilename[editor.document.languageId]) {
+      return languageToFilename[editor.document.languageId];
+    }
+
+    return filename;
+  }
+
   private ignorePatterns(): string {
     return `{${this.settings.getIgnore().join(",")}}`;
   }
@@ -201,7 +234,8 @@ export default class CommandHandler extends BaseCommandHandler {
 
     result.source = text;
     result.cursor = cursor;
-    result.filename = path.basename(this.activeEditor!.document.fileName);
+    result.filename = this.filenameForEditor(this.activeEditor!);
+
     return {
       message: "editorState",
       data: result
