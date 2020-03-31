@@ -11,23 +11,23 @@
   "engines": {
     "vscode": "^1.33.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
+  "categories": ["Other"],
+  "activationEvents": ["*"],
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
-    "compile": "sass ../serenade-editor-shared/src/global.scss ../serenade-editor-shared/build/global.css && webpack --mode production",
+    "compile": "sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
     "dev": "webpack --mode development --watch",
     "watch": "",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "dependencies": {
-    "mkdirp": "0.5.1"
+    "bufferutil": "^4.0.1",
+    "mkdirp": "0.5.1",
+    "utf-8-validate": "^5.0.2",
+    "uuid": "^7.0.2",
+    "ws": "^7.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",
@@ -35,6 +35,8 @@
     "@types/mkdirp": "^0.5.2",
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.14.12",
+    "@types/uuid": "^7.0.2",
+    "@types/ws": "^7.2.3",
     "babel-loader": "^8.0.6",
     "css-loader": "^3.0.0",
     "mini-css-extract-plugin": "^0.7.0",
