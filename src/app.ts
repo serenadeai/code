@@ -97,7 +97,7 @@ document.querySelector('.download').addEventListener('click', e => {
   }
 
   start() {
-    if (this.ipc) {
+    if (this.initialized) {
       return;
     }
 
