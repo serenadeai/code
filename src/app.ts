@@ -103,7 +103,7 @@ document.querySelector('.download').addEventListener('click', e => {
 
     this.run();
     (this.commandHandler! as CommandHandler).pollActiveEditor();
-    this.settings!.setCode();
+    this.settings!.setPluginInstalled("vscode");
 
     vscode.window.onDidChangeActiveTextEditor(() => {
       this.ipc!.sendActive();

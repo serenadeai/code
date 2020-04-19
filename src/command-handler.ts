@@ -1,3 +1,4 @@
+import * as globby from "globby";
 import * as path from "path";
 import * as vscode from "vscode";
 
@@ -43,10 +44,6 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     return filename;
-  }
-
-  private ignorePatterns(): string {
-    return `{${this.settings.getIgnore().join(",")}}`;
   }
 
   async focus(): Promise<any> {
@@ -203,8 +200,10 @@ export default class CommandHandler extends BaseCommandHandler {
       source: "",
       cursor: 0,
       filename: "",
-      files: this.openFileList.map((e: any) => e.path),
-      roots: [vscode.workspace.rootPath]
+      files: this.openFileList,
+      roots: vscode.workspace.workspaceFolders
+        ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
+        : []
     };
 
     const position = this.activeEditor!.selection.active;
@@ -254,18 +253,35 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
-    vscode.workspace
-      .openTextDocument(this.openFileList[data.index || 0])
-      .then(doc => vscode.window.showTextDocument(doc));
+    vscode.window.showTextDocument(vscode.Uri.file(this.openFileList[data.index || 0]));
   }
 
   async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
     await this.focus();
-    const path = (data.path as string).replace(" ", "*");
-    return vscode.workspace.findFiles(`*${path}*`, this.ignorePatterns(), 20).then(files => {
-      this.openFileList = files;
-      return { message: "sendText", data: { text: `callback open` } };
-    });
+
+    // we want to look for any substring match, so replace spaces with wildcard
+    const search = "**" + data.path.toLowerCase().replace(/ /g, "**") + "**";
+    this.openFileList = [];
+    if (vscode.workspace.workspaceFolders) {
+      for (const e of vscode.workspace.workspaceFolders) {
+        this.openFileList.push(
+          ...globby.sync([search], {
+            cwd: e.uri.path,
+            absolute: true,
+            caseSensitiveMatch: false,
+            baseNameMatch: true,
+            gitignore: true
+          })
+        );
+      }
+    }
+
+    return {
+      message: "sendText",
+      data: {
+        text: `callback open`
+      }
+    };
   }
 
   async COMMAND_TYPE_PASTE(data: any): Promise<any> {
