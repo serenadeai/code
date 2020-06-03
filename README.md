@@ -1,35 +1,49 @@
 # Serenade
 
-Serenade enables you to write code by speaking rather than typing. With natural English commands, Serenade is powerful but easy to learn. Abandon your keyboard entirely, or use Serenade as your coding assistant.
+## Code with voice
 
-[![Serenade Screenshot](https://cdn.serenade.ai/img/screenshot.png)](https://serenade.ai/)
+With Serenade, you can write code by speaking rather than typing. Take a break from typing using natural voice commands like "add function hello" or "delete argument url" rather than memorizing language syntax and keyboard shortcuts. Control your editor and workflows with just your voice, and supercharge your productivity.
 
-## Take a break from typing
+Learn more at [https://serenade.ai](https://serenade.ai).
 
-### Speak naturally.
-
-Code with your voice using commands like "add function called foo" and "change word to bar".
-
-### Powerful commands.
-
-Express complex manipulations quickly with commands like "copy function" and "delete third argument"
-
-### Easy to learn.
-
-Don't waste time memorizing editor shortcuts. Just say what you want to do, and Serenade understands.
-
-### Cross-platform.
-
-Enjoy the same great experience across Windows, Mac, and Linux.
-
-### Your coding assistant.
-
-Use Serenade to complement your existing workflow, or write code entirely with voice.
-
-### Multiple languages.
-
-Use the same commands across multiple languages: Python, JavaScript, Java, and more on the way.
+[![Serenade Demo](https://cdn.serenade.ai/img/serenade-demo.gif)](https://serenade.ai/)
 
 ## Getting Started
 
-Check out the [Serenade guide](https://docs.serenade.ai/) to start learning how to use Serenade.
+Check out the [Serenade documentation](https://serenade.ai/learn) to learn how to set up and start using Serenade.
+
+### Code hands-free
+
+Debug code, read documentation, and browse the web using only your voice—all while leaning back in your chair, stretching, or petting your dog.
+
+### Rest your wrists
+
+Using a keyboard all day can cause wrist pain—whether you have an injury or you’re looking to prevent one, Serenade can help you be just as productive without typing at all.
+
+### Develop using natural speech
+
+Use commands like "add method init" and "add enum colors" to quickly and naturally build code without worrying about the spacing and syntax.
+
+### Stop memorizing shortcuts
+
+Refactor code by just saying "cut first function" or "delete third argument". There's no need to memorize esoteric shortcuts.
+
+### Control any platform
+
+With commands like focus terminal, next tab, and type hello, add voice control to any app across Mac, Windows, and Linux.
+
+### Integrate voice into your workflow
+
+Serenade fully supports Atom and Visual Studio Code via native plugins, with support for more editors coming soon.
+
+### Implement custom automations
+
+Use the Serenade API to automate any workflow, from compiling code to running tests.
+
+### Work across multiple languages
+
+Use the same voice commands to write Java, Python, JavaScript, TypeScript, HTML, and CSS.
+
+### Get the support you need
+
+Browse the Serenade documentation, view voice coding demos, and connect with our community to learn how to code with voice.
