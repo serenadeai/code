@@ -14,36 +14,27 @@ export default class CommandHandler extends BaseCommandHandler {
   private successColor: string = "43, 161, 67";
 
   private filenameForEditor(editor: vscode.TextEditor): string {
-    let filename = path.basename(editor.document.fileName);
-    const known = ["js", "jsx", "vue", "ts", "tsx", "java", "py", "html", "css", "less", "scss"];
-    for (const extension of known) {
-      if (filename.endsWith(`.${extension}`)) {
-        return filename;
-      }
-    }
-
-    if (!filename) {
-      filename = "file";
-    }
-
+    const filename = "file";
     const languageToFilename: { [key: string]: string } = {
+      css: `${filename}.css`,
+      dart: `${filename}.dart`,
+      html: `${filename}.html`,
+      less: `${filename}.less`,
+      java: `${filename}.java`,
       javascript: `${filename}.js`,
       javascriptreact: `${filename}.js`,
+      kotlin: `${filename}.kt`,
+      python: `${filename}.py`,
+      scss: `${filename}.scss`,
       typescript: `${filename}.ts`,
       typescriptreact: `${filename}.tsx`,
-      java: `${filename}.java`,
-      python: `${filename}.py`,
-      html: `${filename}.html`,
-      css: `${filename}.css`,
-      less: `${filename}.less`,
-      scss: `${filename}.scss`
     };
 
     if (languageToFilename[editor.document.languageId]) {
       return languageToFilename[editor.document.languageId];
     }
 
-    return filename;
+    return editor.document.fileName;
   }
 
   async focus(): Promise<any> {
@@ -73,12 +64,12 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     for (const range of ranges) {
-      const decorations = steps.map(e =>
+      const decorations = steps.map((e) =>
         vscode.window.createTextEditorDecorationType({
           backgroundColor: `rgba(${
             range.diffRangeType == diff.DiffRangeType.Delete ? this.errorColor : this.successColor
           }, 0.${e})`,
-          isWholeLine: range.diffHighlightType == diff.DiffHighlightType.Line
+          isWholeLine: range.diffHighlightType == diff.DiffHighlightType.Line,
         })
       );
 
@@ -90,7 +81,12 @@ export default class CommandHandler extends BaseCommandHandler {
       for (let i = 0; i < steps.length; i++) {
         setTimeout(() => {
           this.activeEditor!.setDecorations(decorations[i], [
-            new vscode.Range(range.start.row, range.start.column, range.stop.row, range.stop.column)
+            new vscode.Range(
+              range.start.row,
+              range.start.column,
+              range.stop.row,
+              range.stop.column
+            ),
           ]);
 
           setTimeout(() => {
@@ -135,7 +131,7 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     this.activeEditor!.selections = [
-      new vscode.Selection(startRow, startColumn, endRow, endColumn)
+      new vscode.Selection(startRow, startColumn, endRow, endColumn),
     ];
   }
 
@@ -145,7 +141,7 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     if (before != source) {
-      this.activeEditor!.edit(edit => {
+      this.activeEditor!.edit((edit) => {
         const firstLine = this.activeEditor!.document.lineAt(0);
         const lastLine = this.activeEditor!.document.lineAt(
           this.activeEditor!.document.lineCount - 1
@@ -203,7 +199,7 @@ export default class CommandHandler extends BaseCommandHandler {
       files: this.openFileList,
       roots: vscode.workspace.workspaceFolders
         ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
-        : []
+        : [],
     };
 
     const position = this.activeEditor!.selection.active;
@@ -237,7 +233,7 @@ export default class CommandHandler extends BaseCommandHandler {
 
     return {
       message: "editorState",
-      data: result
+      data: result,
     };
   }
 
@@ -270,7 +266,7 @@ export default class CommandHandler extends BaseCommandHandler {
             absolute: true,
             caseSensitiveMatch: false,
             baseNameMatch: true,
-            gitignore: true
+            gitignore: true,
           })
         );
       }
@@ -279,8 +275,8 @@ export default class CommandHandler extends BaseCommandHandler {
     return {
       message: "sendText",
       data: {
-        text: `callback open`
-      }
+        text: `callback open`,
+      },
     };
   }
 
@@ -289,7 +285,7 @@ export default class CommandHandler extends BaseCommandHandler {
       return;
     }
 
-    vscode.env.clipboard.readText().then(text => {
+    vscode.env.clipboard.readText().then((text) => {
       const source = this.activeEditor!.document.getText();
       this.pasteText(source, data, text);
     });
