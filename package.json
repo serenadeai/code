@@ -11,12 +11,8 @@
   "engines": {
     "vscode": "^1.44.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
+  "categories": ["Other"],
+  "activationEvents": ["*"],
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
@@ -27,7 +23,7 @@
   },
   "dependencies": {
     "bufferutil": "^4.0.1",
-    "globby": "^11.0.0",
+    "gitignore-globs": "^0.1.1",
     "mkdirp": "0.5.1",
     "utf-8-validate": "^5.0.2",
     "uuid": "^7.0.2",

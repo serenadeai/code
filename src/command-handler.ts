@@ -1,11 +1,10 @@
-import * as globby from "globby";
 import * as path from "path";
 import * as vscode from "vscode";
-
 import App from "./app";
 import BaseCommandHandler from "./shared/command-handler";
 import * as diff from "./shared/diff";
 import Settings from "./shared/settings";
+const ignoreParser: any = require("gitignore-globs");
 
 export default class CommandHandler extends BaseCommandHandler {
   private activeEditor?: vscode.TextEditor;
@@ -255,29 +254,25 @@ export default class CommandHandler extends BaseCommandHandler {
   async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
     await this.focus();
 
-    // we want to look for any substring match, so replace spaces with wildcard
-    const search = "**" + data.path.toLowerCase().replace(/ /g, "**") + "**";
-    this.openFileList = [];
-    if (vscode.workspace.workspaceFolders) {
-      for (const e of vscode.workspace.workspaceFolders) {
-        this.openFileList.push(
-          ...globby.sync([search], {
-            cwd: e.uri.path,
-            absolute: true,
-            caseSensitiveMatch: false,
-            baseNameMatch: true,
-            gitignore: true,
-          })
-        );
-      }
+    const path = data.path
+      .split()
+      .map((e: string) => (e == " " ? "*" : `{${e.toUpperCase()},${e.toLowerCase()}}`))
+      .join("");
+
+    let exclude = [];
+    const ignorePath = await vscode.workspace.findFiles(".gitignore");
+    if (ignorePath.length > 0) {
+      exclude = ignoreParser._map(
+        ignoreParser._prepare(
+          Buffer.from(await vscode.workspace.fs.readFile(ignorePath[0]))
+            .toString("utf-8")
+            .split("\n")
+        )
+      );
     }
 
-    return {
-      message: "sendText",
-      data: {
-        text: `callback open`,
-      },
-    };
+    this.openFileList = await vscode.workspace.findFiles(`**/*${path}*`, exclude, 10);
+    return { message: "sendText", data: { text: `callback open` } };
   }
 
   async COMMAND_TYPE_PASTE(data: any): Promise<any> {
