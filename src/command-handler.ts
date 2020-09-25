@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as vscode from "vscode";
+import minimatch from "minimatch";
 import App from "./app";
 import BaseCommandHandler from "./shared/command-handler";
 import * as diff from "./shared/diff";
@@ -255,14 +256,14 @@ export default class CommandHandler extends BaseCommandHandler {
     await this.focus();
 
     const path = data.path
-      .split()
+      .split("")
       .map((e: string) => (e == " " ? "*" : `{${e.toUpperCase()},${e.toLowerCase()}}`))
       .join("");
 
-    let exclude = [];
+    let excludes: string[] = [];
     const ignorePath = await vscode.workspace.findFiles(".gitignore");
     if (ignorePath.length > 0) {
-      exclude = ignoreParser._map(
+      excludes = ignoreParser._map(
         ignoreParser._prepare(
           Buffer.from(await vscode.workspace.fs.readFile(ignorePath[0]))
             .toString("utf-8")
@@ -271,7 +272,11 @@ export default class CommandHandler extends BaseCommandHandler {
       );
     }
 
-    this.openFileList = await vscode.workspace.findFiles(`**/*${path}*`, exclude, 10);
+    this.openFileList = (await vscode.workspace.findFiles(`**/*${path}*`, undefined, 100))
+      .map((e: any) => e.path)
+      .filter((path: string) => excludes.every((exclude: string) => !minimatch(path, exclude)))
+      .slice(0, 10);
+
     return { message: "sendText", data: { text: `callback open` } };
   }
 
