@@ -196,7 +196,7 @@ export default class CommandHandler extends BaseCommandHandler {
       source: "",
       cursor: 0,
       filename: "",
-      files: this.openFileList,
+      files: this.openFileList.map((e: any) => e.path),
       roots: vscode.workspace.workspaceFolders
         ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
         : [],
@@ -249,7 +249,7 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
-    vscode.window.showTextDocument(vscode.Uri.file(this.openFileList[data.index || 0]));
+    vscode.window.showTextDocument(this.openFileList[data.index || 0]);
   }
 
   async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
@@ -273,8 +273,7 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     this.openFileList = (await vscode.workspace.findFiles(`**/*${path}*`, undefined, 100))
-      .map((e: any) => e.path)
-      .filter((path: string) => excludes.every((exclude: string) => !minimatch(path, exclude)))
+      .filter((e: any) => excludes.every((exclude: string) => !minimatch(e.path, exclude)))
       .slice(0, 10);
 
     return { message: "sendText", data: { text: `callback open` } };
