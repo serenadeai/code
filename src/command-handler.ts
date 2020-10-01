@@ -237,6 +237,47 @@ export default class CommandHandler extends BaseCommandHandler {
     };
   }
 
+  async COMMAND_TYPE_DEBUGGER_CONTINUE(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.continue");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_INLINE_BREAKPOINT(_data: any): Promise<any> {
+    vscode.commands.executeCommand("editor.debug.action.toggleInlineBreakpoint");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_PAUSE(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.pause");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_SHOW_HOVER(_data: any): Promise<any> {
+    await this.focus();
+    vscode.commands.executeCommand("editor.debug.action.showDebugHover");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_START(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.start");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_STEP_INTO(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.stepInto");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_STEP_OUT(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.stepOut");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_STEP_OVER(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.stepOver");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_STOP(_data: any): Promise<any> {
+    vscode.commands.executeCommand("workbench.action.debug.stop");
+  }
+
+  async COMMAND_TYPE_DEBUGGER_TOGGLE_BREAKPOINT(_data: any): Promise<any> {
+    vscode.commands.executeCommand("editor.debug.action.toggleBreakpoint");
+  }
+
   async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
     await this.focus();
     vscode.commands.executeCommand("editor.action.revealDefinition");
