@@ -38,6 +38,7 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   async focus(): Promise<any> {
+    this.updateActiveEditor();
     if (!this.activeEditor) {
       return;
     }
@@ -101,12 +102,7 @@ export default class CommandHandler extends BaseCommandHandler {
 
   pollActiveEditor() {
     setInterval(() => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        return;
-      }
-
-      this.activeEditor = editor;
+      this.updateActiveEditor();
     }, 1000);
   }
 
@@ -159,6 +155,15 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     this.activeEditor!.selections = [new vscode.Selection(row, column, row, column)];
+  }
+
+  updateActiveEditor() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      return;
+    }
+
+    this.activeEditor = editor;
   }
 
   async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
