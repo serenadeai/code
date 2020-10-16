@@ -17,3 +17,7 @@ To use Serenade for Visual Studio Code, you'll also need the Serenade app, avail
 ## Getting Started
 
 Check out the [Serenade documentation](https://serenade.ai/learn) to learn how to set up and start using Serenade.
+
+## Changelog
+
+See the [Serenade changelog](https://serenade.ai/changelog) for a complete list of updates.
