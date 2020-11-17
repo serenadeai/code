@@ -43,7 +43,7 @@ export default class CommandHandler extends BaseCommandHandler {
       return;
     }
 
-    vscode.window.showTextDocument(this.activeEditor!.document);
+    await vscode.window.showTextDocument(this.activeEditor!.document);
     await this.uiDelay();
   }
 
@@ -168,14 +168,16 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_CLOSE_WINDOW(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+    await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_COPY(data: any): Promise<any> {
@@ -188,8 +190,9 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_CREATE_TAB(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
+    await vscode.commands.executeCommand("workbench.action.files.newUntitledFile");
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
@@ -247,7 +250,7 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   async COMMAND_TYPE_DEBUGGER_INLINE_BREAKPOINT(_data: any): Promise<any> {
-    vscode.commands.executeCommand("editor.debug.action.toggleInlineBreakpoint");
+    await vscode.commands.executeCommand("editor.debug.action.toggleInlineBreakpoint");
   }
 
   async COMMAND_TYPE_DEBUGGER_PAUSE(_data: any): Promise<any> {
@@ -285,17 +288,18 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("editor.action.revealDefinition");
+    await vscode.commands.executeCommand("editor.action.revealDefinition");
   }
 
   async COMMAND_TYPE_NEXT_TAB(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("workbench.action.nextEditor");
+    await vscode.commands.executeCommand("workbench.action.nextEditor");
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_OPEN_FILE(data: any): Promise<any> {
-    vscode.window.showTextDocument(this.openFileList[data.index || 0]);
+    await vscode.window.showTextDocument(this.openFileList[data.index || 0]);
   }
 
   async COMMAND_TYPE_OPEN_FILE_LIST(data: any): Promise<any> {
@@ -338,43 +342,46 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("workbench.action.previousEditor");
+    await vscode.commands.executeCommand("workbench.action.previousEditor");
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_REDO(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("redo");
+    await vscode.commands.executeCommand("redo");
     await this.scrollToCursor();
   }
 
   async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("workbench.action.files.save");
+    await vscode.commands.executeCommand("workbench.action.files.save");
   }
 
   async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
     await this.focus();
     const direction = data.direction.toLowerCase();
     const split = direction.charAt(0).toUpperCase() + direction.slice(1);
-    vscode.commands.executeCommand(`workbench.action.splitEditor${split}`);
+    await vscode.commands.executeCommand(`workbench.action.splitEditor${split}`);
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
     await this.focus();
     if (data.index < 0) {
-      vscode.commands.executeCommand("workbench.action.lastEditorInGroup");
+      await vscode.commands.executeCommand("workbench.action.lastEditorInGroup");
     } else {
-      vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
+      await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
     }
 
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 
   async COMMAND_TYPE_UNDO(_data: any): Promise<any> {
     await this.focus();
-    vscode.commands.executeCommand("undo");
+    await vscode.commands.executeCommand("undo");
     await this.scrollToCursor();
   }
 
@@ -382,7 +389,8 @@ export default class CommandHandler extends BaseCommandHandler {
     await this.focus();
     const direction = data.direction.toLowerCase();
     const split = direction.charAt(0).toUpperCase() + direction.slice(1);
-    vscode.commands.executeCommand(`workspace.action.focus${split}Group`);
+    await vscode.commands.executeCommand(`workspace.action.focus${split}Group`);
     await this.uiDelay();
+    this.updateActiveEditor();
   }
 }
