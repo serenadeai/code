@@ -367,6 +367,12 @@ export default class CommandHandler extends BaseCommandHandler {
     this.updateActiveEditor();
   }
 
+  async COMMAND_TYPE_STYLE(_data: any): Promise<any> {
+    await this.focus();
+    await vscode.commands.executeCommand("editor.action.formatDocument");
+    await this.uiDelay();
+  }
+
   async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
     await this.focus();
     if (data.index < 0) {
