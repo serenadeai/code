@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import minimatch from "minimatch";
 import App from "./app";
 import BaseCommandHandler from "./shared/command-handler";
 import * as diff from "./shared/diff";
@@ -196,10 +195,6 @@ export default class CommandHandler extends BaseCommandHandler {
   }
 
   async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
-    if (!this.activeEditor) {
-      return;
-    }
-
     let result = {
       source: "",
       cursor: 0,
@@ -209,6 +204,13 @@ export default class CommandHandler extends BaseCommandHandler {
         ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
         : [],
     };
+
+    if (!this.activeEditor) {
+      return {
+        message: "editorState",
+        data: result,
+      };
+    }
 
     const position = this.activeEditor!.selection.active;
     const row = position.line;
@@ -310,21 +312,39 @@ export default class CommandHandler extends BaseCommandHandler {
       .map((e: string) => (e == " " ? "*" : `{${e.toUpperCase()},${e.toLowerCase()}}`))
       .join("");
 
-    let excludes: string[] = [];
-    const ignorePath = await vscode.workspace.findFiles(".gitignore");
+    let exclude: string[] = [
+      "**/.git",
+      "**/.hg",
+      "**/node_modules",
+      "**/npm_packages",
+      ...Object.keys(
+        (await vscode.workspace.getConfiguration("search", null).get("exclude")) || {}
+      ),
+      ...Object.keys((await vscode.workspace.getConfiguration("files", null).get("exclude")) || {}),
+    ];
+
+    let ignorePath = await vscode.workspace.findFiles(".gitignore");
+    if (ignorePath.length == 0) {
+      ignorePath = await vscode.workspace.findFiles("**/*p4ignore*");
+    }
+
     if (ignorePath.length > 0) {
-      excludes = ignoreParser._map(
-        ignoreParser._prepare(
-          Buffer.from(await vscode.workspace.fs.readFile(ignorePath[0]))
-            .toString("utf-8")
-            .split("\n")
+      exclude = exclude.concat(
+        ignoreParser._map(
+          ignoreParser._prepare(
+            Buffer.from(await vscode.workspace.fs.readFile(ignorePath[0]))
+              .toString("utf-8")
+              .split("\n")
+          )
         )
       );
     }
 
-    this.openFileList = (await vscode.workspace.findFiles(`**/*${path}*`, undefined, 100))
-      .filter((e: any) => excludes.every((exclude: string) => !minimatch(e.path, exclude)))
-      .slice(0, 10);
+    this.openFileList = await vscode.workspace.findFiles(
+      `**/*${path}*`,
+      `{${exclude.map((e: string) => e.replace(/\\/g, "/")).join(",")}}`,
+      10
+    );
 
     return { message: "sendText", data: { text: `callback open` } };
   }

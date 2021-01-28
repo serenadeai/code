@@ -11,24 +11,19 @@
   "engines": {
     "vscode": "^1.44.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
+  "categories": ["Other"],
+  "activationEvents": ["*"],
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
-    "compile": "sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
+    "compile": "node-sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
     "dev": "webpack --mode development --watch",
-    "watch": "",
+    "watch": "exit 0",
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "dependencies": {
     "bufferutil": "^4.0.1",
     "gitignore-globs": "^0.1.1",
-    "minimatch": "^3.0.4",
     "mkdirp": "0.5.1",
     "utf-8-validate": "^5.0.2",
     "uuid": "^7.0.2",
@@ -37,7 +32,6 @@
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/preset-env": "^7.5.0",
-    "@types/minimatch": "^3.0.3",
     "@types/mkdirp": "^0.5.2",
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.14.12",
@@ -54,6 +48,6 @@
     "tslint": "^5.12.1",
     "typescript": "^3.5.2",
     "webpack": "^4.35.0",
-    "webpack-cli": "^3.3.5"
+    "webpack-cli": "^4.4.0"
   }
 }
