@@ -13,27 +13,45 @@ export default class CommandHandler extends BaseCommandHandler {
   private successColor: string = "43, 161, 67";
 
   private filenameForEditor(editor: vscode.TextEditor): string {
-    const filename = "file";
-    const languageToFilename: { [key: string]: string } = {
-      css: `${filename}.css`,
-      dart: `${filename}.dart`,
-      html: `${filename}.html`,
-      less: `${filename}.less`,
-      java: `${filename}.java`,
-      javascript: `${filename}.js`,
-      javascriptreact: `${filename}.js`,
-      kotlin: `${filename}.kt`,
-      python: `${filename}.py`,
-      scss: `${filename}.scss`,
-      typescript: `${filename}.ts`,
-      typescriptreact: `${filename}.tsx`,
+    const languageToExtension: { [key: string]: string[] } = {
+      c: ["c", "h"],
+      cpp: ["cpp", "cc", "cxx", "c++", "hpp", "hh", "hxx", "h++"],
+      csharp: ["cs"],
+      css: ["css", "scss"],
+      dart: ["dart"],
+      go: ["go"],
+      html: ["html", "vue", "svelte"],
+      java: ["java"],
+      javascript: ["js", "jsx"],
+      javascriptreact: ["jsx", "js"],
+      jsx: ["jsx", "js"],
+      kotlin: ["kt"],
+      python: ["py"],
+      ruby: ["rb"],
+      rust: ["rs"],
+      scss: ["scss"],
+      shellscript: ["sh", "bash"],
+      typescript: ["ts", "tsx"],
+      typescriptreact: ["tsx", "ts"],
+      vue: ["vue", "html"],
     };
 
-    if (languageToFilename[editor.document.languageId]) {
-      return languageToFilename[editor.document.languageId];
+    let filename = editor.document.fileName;
+    if (languageToExtension[editor.document.languageId]) {
+      let matches = false;
+      for (const extension of languageToExtension[editor.document.languageId]) {
+        if (filename.endsWith(`.${extension}`)) {
+          matches = true;
+          break;
+        }
+      }
+
+      if (!matches) {
+        filename += `.${languageToExtension[editor.document.languageId][0]}`;
+      }
     }
 
-    return editor.document.fileName;
+    return filename;
   }
 
   async focus(): Promise<any> {
