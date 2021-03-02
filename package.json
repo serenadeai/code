@@ -16,7 +16,7 @@
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
-    "compile": "node-sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
+    "compile": "sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
     "dev": "webpack --mode development --watch",
     "watch": "exit 0",
     "test": "npm run compile && node ./node_modules/vscode/bin/test"

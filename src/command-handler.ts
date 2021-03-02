@@ -11,48 +11,28 @@ export default class CommandHandler extends BaseCommandHandler {
   private errorColor: string = "255, 99, 71";
   private openFileList: any[] = [];
   private successColor: string = "43, 161, 67";
-
-  private filenameForEditor(editor: vscode.TextEditor): string {
-    const languageToExtension: { [key: string]: string[] } = {
-      c: ["c", "h"],
-      cpp: ["cpp", "cc", "cxx", "c++", "hpp", "hh", "hxx", "h++"],
-      csharp: ["cs"],
-      css: ["css", "scss"],
-      dart: ["dart"],
-      go: ["go"],
-      html: ["html", "vue", "svelte"],
-      java: ["java"],
-      javascript: ["js", "jsx"],
-      javascriptreact: ["jsx", "js"],
-      jsx: ["jsx", "js"],
-      kotlin: ["kt"],
-      python: ["py"],
-      ruby: ["rb"],
-      rust: ["rs"],
-      scss: ["scss"],
-      shellscript: ["sh", "bash"],
-      typescript: ["ts", "tsx"],
-      typescriptreact: ["tsx", "ts"],
-      vue: ["vue", "html"],
-    };
-
-    let filename = editor.document.fileName;
-    if (languageToExtension[editor.document.languageId]) {
-      let matches = false;
-      for (const extension of languageToExtension[editor.document.languageId]) {
-        if (filename.endsWith(`.${extension}`)) {
-          matches = true;
-          break;
-        }
-      }
-
-      if (!matches) {
-        filename += `.${languageToExtension[editor.document.languageId][0]}`;
-      }
-    }
-
-    return filename;
-  }
+  private languageToExtension: { [key: string]: string[] } = {
+    c: ["c", "h"],
+    cpp: ["cpp", "cc", "cxx", "c++", "hpp", "hh", "hxx", "h++"],
+    csharp: ["cs"],
+    css: ["css", "scss"],
+    dart: ["dart"],
+    go: ["go"],
+    html: ["html", "vue", "svelte"],
+    java: ["java"],
+    javascript: ["js", "jsx"],
+    javascriptreact: ["jsx", "js"],
+    jsx: ["jsx", "js"],
+    kotlin: ["kt"],
+    python: ["py"],
+    ruby: ["rb"],
+    rust: ["rs"],
+    scss: ["scss"],
+    shellscript: ["sh", "bash"],
+    typescript: ["ts", "tsx"],
+    typescriptreact: ["tsx", "ts"],
+    vue: ["vue", "html"],
+  };
 
   async focus(): Promise<any> {
     this.updateActiveEditor();
@@ -212,22 +192,32 @@ export default class CommandHandler extends BaseCommandHandler {
     this.updateActiveEditor();
   }
 
-  async COMMAND_TYPE_GET_EDITOR_STATE(_data: any): Promise<any> {
+  async COMMAND_TYPE_GET_EDITOR_STATE(data: any): Promise<any> {
     let result = {
-      source: "",
-      cursor: 0,
-      filename: "",
-      files: this.openFileList.map((e: any) => e.path),
-      roots: vscode.workspace.workspaceFolders
-        ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
-        : [],
+      message: "editorState",
+      data: {
+        source: "",
+        cursor: 0,
+        filename: "",
+        files: this.openFileList.map((e: any) => e.path),
+        roots: vscode.workspace.workspaceFolders
+          ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
+          : [],
+      },
     };
 
     if (!this.activeEditor) {
-      return {
-        message: "editorState",
-        data: result,
-      };
+      return result;
+    }
+
+    result.data.filename = this.filenameFromLanguage(
+      this.activeEditor!.document.fileName,
+      this.activeEditor!.document.languageId,
+      this.languageToExtension
+    );
+
+    if (data.limited) {
+      return result;
     }
 
     const position = this.activeEditor!.selection.active;
@@ -255,14 +245,9 @@ export default class CommandHandler extends BaseCommandHandler {
       cursor++;
     }
 
-    result.source = text;
-    result.cursor = cursor;
-    result.filename = this.filenameForEditor(this.activeEditor!);
-
-    return {
-      message: "editorState",
-      data: result,
-    };
+    result.data.source = text;
+    result.data.cursor = cursor;
+    return result;
   }
 
   async COMMAND_TYPE_DEBUGGER_CONTINUE(_data: any): Promise<any> {
@@ -335,17 +320,14 @@ export default class CommandHandler extends BaseCommandHandler {
       "**/.hg",
       "**/node_modules",
       "**/npm_packages",
+      "**/npm",
       ...Object.keys(
         (await vscode.workspace.getConfiguration("search", null).get("exclude")) || {}
       ),
       ...Object.keys((await vscode.workspace.getConfiguration("files", null).get("exclude")) || {}),
     ];
 
-    let ignorePath = await vscode.workspace.findFiles(".gitignore");
-    if (ignorePath.length == 0) {
-      ignorePath = await vscode.workspace.findFiles("**/*p4ignore*");
-    }
-
+    const ignorePath = await vscode.workspace.findFiles(".gitignore");
     if (ignorePath.length > 0) {
       exclude = exclude.concat(
         ignoreParser._map(
@@ -365,17 +347,6 @@ export default class CommandHandler extends BaseCommandHandler {
     );
 
     return { message: "sendText", data: { text: `callback open` } };
-  }
-
-  async COMMAND_TYPE_PASTE(data: any): Promise<any> {
-    if (!this.activeEditor) {
-      return;
-    }
-
-    vscode.env.clipboard.readText().then((text) => {
-      const source = this.activeEditor!.document.getText();
-      this.pasteText(source, data, text);
-    });
   }
 
   async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
