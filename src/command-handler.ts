@@ -1,9 +1,6 @@
-import * as path from "path";
 import * as vscode from "vscode";
-import App from "./app";
 import BaseCommandHandler from "./shared/command-handler";
 import * as diff from "./shared/diff";
-import Settings from "./shared/settings";
 const ignoreParser: any = require("gitignore-globs");
 
 export default class CommandHandler extends BaseCommandHandler {
@@ -289,6 +286,10 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_DEBUGGER_TOGGLE_BREAKPOINT(_data: any): Promise<any> {
     vscode.commands.executeCommand("editor.debug.action.toggleBreakpoint");
+  }
+
+  async COMMAND_TYPE_EVALUATE_IN_PLUGIN(data: any): Promise<any> {
+    vscode.commands.executeCommand(data.text);
   }
 
   async COMMAND_TYPE_GO_TO_DEFINITION(_data: any): Promise<any> {
