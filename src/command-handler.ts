@@ -110,7 +110,10 @@ export default class CommandHandler extends BaseCommandHandler {
       const range = this.activeEditor!.visibleRanges[0];
       const buffer = 5;
       if (cursor < range.start.line + buffer || cursor > range.end.line - buffer) {
-        await vscode.commands.executeCommand("revealLine", { lineNumber: cursor, at: "center" });
+        await vscode.commands.executeCommand("revealLine", {
+          lineNumber: cursor,
+          at: "center",
+        });
       }
     }
   }
@@ -312,8 +315,17 @@ export default class CommandHandler extends BaseCommandHandler {
     await this.focus();
 
     const path = data.path
+      .replace(/\//, "*/*")
       .split("")
-      .map((e: string) => (e == " " ? "*" : `{${e.toUpperCase()},${e.toLowerCase()}}`))
+      .map((e: string) => {
+        if (e == " ") {
+          return "*";
+        } else if (e.match(/[a-z]/)) {
+          return `{${e.toUpperCase()},${e.toLowerCase()}}`;
+        }
+
+        return e;
+      })
       .join("");
 
     let exclude: string[] = [
