@@ -163,6 +163,32 @@ export default class CommandHandler extends BaseCommandHandler {
     this.activeEditor = editor;
   }
 
+  getCursorPosition(position: any, text: string) {
+    const row = position.line;
+    const column = position.character;
+
+    // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
+    let cursor = 0;
+    let currentRow = 0;
+    let currentColumn = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (currentRow === row) {
+        if (currentColumn === column) {
+          break;
+        }
+
+        currentColumn++;
+      }
+
+      if (text[i] === "\n") {
+        currentRow++;
+      }
+
+      cursor++;
+    }
+    return cursor;
+  }
+
   async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
     await this.focus();
     await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
@@ -192,12 +218,16 @@ export default class CommandHandler extends BaseCommandHandler {
     this.updateActiveEditor();
   }
 
+  async COMMAND_TYPE_DUPLICATE_TAB(_data: any): Promise<any> {}
+
   async COMMAND_TYPE_GET_EDITOR_STATE(data: any): Promise<any> {
     let result = {
       message: "editorState",
       data: {
         source: "",
         cursor: 0,
+        selectionStart: 0,
+        selectionEnd: 0,
         filename: "",
         files: this.openFileList.map((e: any) => e.path),
         roots: vscode.workspace.workspaceFolders
@@ -221,32 +251,19 @@ export default class CommandHandler extends BaseCommandHandler {
     }
 
     const position = this.activeEditor!.selection.active;
-    const row = position.line;
-    const column = position.character;
+    const anchorPosition = this.activeEditor!.selection.anchor;
     const text = this.activeEditor!.document.getText();
 
-    // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
-    let cursor = 0;
-    let currentRow = 0;
-    let currentColumn = 0;
-    for (let i = 0; i < text.length; i++) {
-      if (currentRow === row) {
-        if (currentColumn === column) {
-          break;
-        }
-
-        currentColumn++;
-      }
-
-      if (text[i] === "\n") {
-        currentRow++;
-      }
-
-      cursor++;
+    const cursor = this.getCursorPosition(position, text);
+    const anchor = this.getCursorPosition(anchorPosition, text);
+    if (cursor != anchor) {
+      result.data.selectionStart = cursor > anchor ? anchor : cursor;
+      result.data.selectionEnd = cursor < anchor ? anchor : cursor;
     }
 
     result.data.source = text;
-    result.data.cursor = cursor;
+    result.data.cursor = this.getCursorPosition(position, text);
+
     return result;
   }
 
