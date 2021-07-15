@@ -226,8 +226,7 @@ export default class CommandHandler extends BaseCommandHandler {
       data: {
         source: "",
         cursor: 0,
-        selectionStart: 0,
-        selectionEnd: 0,
+        selectionRange: { start: 0, stop: 0 },
         filename: "",
         files: this.openFileList.map((e: any) => e.path),
         roots: vscode.workspace.workspaceFolders
@@ -257,8 +256,8 @@ export default class CommandHandler extends BaseCommandHandler {
     const cursor = this.getCursorPosition(position, text);
     const anchor = this.getCursorPosition(anchorPosition, text);
     if (cursor != anchor) {
-      result.data.selectionStart = cursor > anchor ? anchor : cursor;
-      result.data.selectionEnd = cursor < anchor ? anchor : cursor;
+      result.data.selectionRange.start = cursor > anchor ? anchor : cursor;
+      result.data.selectionRange.stop = cursor < anchor ? anchor : cursor;
     }
 
     result.data.source = text;
