@@ -417,7 +417,7 @@ export default class CommandHandler extends BaseCommandHandler {
     if (data.index < 0) {
       await vscode.commands.executeCommand("workbench.action.lastEditorInGroup");
     } else {
-      await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
+      await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index + 1}`);
     }
 
     await this.uiDelay();
