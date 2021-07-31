@@ -414,10 +414,10 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_SWITCH_TAB(data: any): Promise<any> {
     await this.focus();
-    if (data.index < 0) {
+    if (data.index <= 0) {
       await vscode.commands.executeCommand("workbench.action.lastEditorInGroup");
     } else {
-      await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index + 1}`);
+      await vscode.commands.executeCommand(`workbench.action.openEditorAtIndex${data.index}`);
     }
 
     await this.uiDelay();
