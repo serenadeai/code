@@ -416,7 +416,7 @@ export default class CommandHandler {
       10
     );
 
-    return { message: "open" };
+    return { message: "sendText", data: { text: "callback open" } };
   }
 
   async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
