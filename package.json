@@ -5,7 +5,7 @@
   "license": "MIT",
   "publisher": "serenade",
   "repository": "https://github.com/serenadeai/code",
-  "version": "1.4.10",
+  "version": "1.5.0",
   "extensionKind": "ui",
   "icon": "icon.png",
   "engines": {
@@ -16,7 +16,7 @@
   "main": "./build/extension.js",
   "scripts": {
     "vscode:prepublish": "webpack --mode production",
-    "build": "./node_modules/.bin/sass ../editor-shared/src/global.scss ../editor-shared/build/global.css && webpack --mode production",
+    "build": "webpack --mode production",
     "dev": "webpack --mode development --watch",
     "watch": "exit 0"
   },
@@ -36,8 +36,6 @@
     "@types/ws": "^7.2.3",
     "css-loader": "^6.6.0",
     "mini-css-extract-plugin": "^2.5.3",
-    "sass": "^1.49.7",
-    "sass-loader": "^12.4.0",
     "style-loader": "^3.3.1",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.5",
