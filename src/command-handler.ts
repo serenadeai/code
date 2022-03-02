@@ -43,33 +43,6 @@ export default class CommandHandler {
     await this.uiDelay();
   }
 
-  private getCursorPosition(position: any, text: string) {
-    const row = position.line;
-    const column = position.character;
-
-    // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
-    let cursor = 0;
-    let currentRow = 0;
-    let currentColumn = 0;
-    for (let i = 0; i < text.length; i++) {
-      if (currentRow === row) {
-        if (currentColumn === column) {
-          break;
-        }
-
-        currentColumn++;
-      }
-
-      if (text[i] === "\n") {
-        currentRow++;
-      }
-
-      cursor++;
-    }
-
-    return cursor;
-  }
-
   private highlightRanges(ranges: diff.DiffRange[]): number {
     const duration = 300;
     const steps = [1, 2, 1];
@@ -113,6 +86,30 @@ export default class CommandHandler {
     }
 
     return 400;
+  }
+
+  private rowAndColumnToCursor(row: number, column: number, text: string) {
+    // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
+    let cursor = 0;
+    let currentRow = 0;
+    let currentColumn = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (currentRow === row) {
+        if (currentColumn === column) {
+          break;
+        }
+
+        currentColumn++;
+      }
+
+      if (text[i] === "\n") {
+        currentRow++;
+      }
+
+      cursor++;
+    }
+
+    return cursor;
   }
 
   private async scrollToCursor(): Promise<any> {
@@ -240,19 +237,23 @@ export default class CommandHandler {
       return result;
     }
 
-    const position = this.activeEditor!.selection.active;
+    const source = this.activeEditor!.document.getText();
+    const cursorPosition = this.activeEditor!.selection.active;
     const anchorPosition = this.activeEditor!.selection.anchor;
-    const text = this.activeEditor!.document.getText();
 
-    const cursor = this.getCursorPosition(position, text);
-    const anchor = this.getCursorPosition(anchorPosition, text);
+    const cursor = this.rowAndColumnToCursor(cursorPosition.line, cursorPosition.character, source);
+    const anchor = this.rowAndColumnToCursor(anchorPosition.line, anchorPosition.character, source);
     if (cursor != anchor) {
       result.data.selectionStart = cursor > anchor ? anchor : cursor;
       result.data.selectionEnd = cursor < anchor ? anchor : cursor;
     }
 
-    result.data.source = text;
-    result.data.cursor = this.getCursorPosition(position, text);
+    result.data.source = source;
+    result.data.cursor = this.rowAndColumnToCursor(
+      cursorPosition.line,
+      cursorPosition.character,
+      source
+    );
     result.data.available = true;
     result.data.canGetState = true;
     result.data.canSetState = true;
