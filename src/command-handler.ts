@@ -213,10 +213,6 @@ export default class CommandHandler {
         selectionStart: 0,
         selectionEnd: 0,
         filename: "",
-        files: this.openFileList.map((e: any) => e.path),
-        roots: vscode.workspace.workspaceFolders
-          ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
-          : [],
       },
     };
 
@@ -237,10 +233,26 @@ export default class CommandHandler {
       return result;
     }
 
+    // filter out the longest root that's a prefix of the filename
+    const roots = vscode.workspace.workspaceFolders
+      ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
+      : [];
+    let files = [];
+    for (const file of this.openFileList.map((e: any) => e.path)) {
+      let prefixLength = 0;
+      for (const root of roots) {
+        if (file.startsWith(root) && prefixLength < file.length) {
+          prefixLength = root.length + 1;
+        }
+      }
+
+      files.push(file.substring(prefixLength));
+    }
+    result.data.files = files;
+
     const source = this.activeEditor!.document.getText();
     const cursorPosition = this.activeEditor!.selection.active;
     const anchorPosition = this.activeEditor!.selection.anchor;
-
     const cursor = this.rowAndColumnToCursor(cursorPosition.line, cursorPosition.character, source);
     const anchor = this.rowAndColumnToCursor(anchorPosition.line, anchorPosition.character, source);
     if (cursor != anchor) {
