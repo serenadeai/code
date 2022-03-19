@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import BaseCommandHandler from "./shared/command-handler";
-import * as diff from "./shared/diff";
+import * as diff from "./diff";
+import Settings from "./settings";
 const ignoreParser: any = require("gitignore-globs");
 
-export default class CommandHandler extends BaseCommandHandler {
+export default class CommandHandler {
   private activeEditor?: vscode.TextEditor;
   private errorColor: string = "255, 99, 71";
   private openFileList: any[] = [];
@@ -31,7 +31,9 @@ export default class CommandHandler extends BaseCommandHandler {
     vue: ["vue", "html"],
   };
 
-  async focus(): Promise<any> {
+  constructor(private settings: Settings) {}
+
+  private async focus(): Promise<any> {
     this.updateActiveEditor();
     if (!this.activeEditor) {
       return;
@@ -41,15 +43,7 @@ export default class CommandHandler extends BaseCommandHandler {
     await this.uiDelay();
   }
 
-  getActiveEditorText(): string | undefined {
-    if (!this.activeEditor) {
-      return undefined;
-    }
-
-    return this.activeEditor!.document.getText();
-  }
-
-  highlightRanges(ranges: diff.DiffRange[]): number {
+  private highlightRanges(ranges: diff.DiffRange[]): number {
     const duration = 300;
     const steps = [1, 2, 1];
     const step = duration / steps.length;
@@ -94,79 +88,7 @@ export default class CommandHandler extends BaseCommandHandler {
     return 400;
   }
 
-  pollActiveEditor() {
-    setInterval(() => {
-      this.updateActiveEditor();
-    }, 1000);
-  }
-
-  async scrollToCursor(): Promise<any> {
-    if (!this.activeEditor) {
-      return;
-    }
-
-    const cursor = this.activeEditor!.selection.start.line;
-    if (this.activeEditor!.visibleRanges.length > 0) {
-      const range = this.activeEditor!.visibleRanges[0];
-      const buffer = 5;
-      if (cursor < range.start.line + buffer || cursor > range.end.line - buffer) {
-        await vscode.commands.executeCommand("revealLine", {
-          lineNumber: cursor,
-          at: "center",
-        });
-      }
-    }
-  }
-
-  select(startRow: number, startColumn: number, endRow: number, endColumn: number) {
-    if (!this.activeEditor) {
-      return;
-    }
-
-    this.activeEditor!.selections = [
-      new vscode.Selection(startRow, startColumn, endRow, endColumn),
-    ];
-  }
-
-  setSourceAndCursor(before: string, source: string, row: number, column: number) {
-    if (!this.activeEditor) {
-      return;
-    }
-
-    if (before != source) {
-      this.activeEditor!.edit((edit) => {
-        const firstLine = this.activeEditor!.document.lineAt(0);
-        const lastLine = this.activeEditor!.document.lineAt(
-          this.activeEditor!.document.lineCount - 1
-        );
-
-        const textRange = new vscode.Range(
-          0,
-          firstLine.range.start.character,
-          this.activeEditor!.document.lineCount - 1,
-          lastLine.range.end.character
-        );
-
-        edit.replace(textRange, source);
-      });
-    }
-
-    this.activeEditor!.selections = [new vscode.Selection(row, column, row, column)];
-  }
-
-  updateActiveEditor() {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      return;
-    }
-
-    this.activeEditor = editor;
-  }
-
-  getCursorPosition(position: any, text: string) {
-    const row = position.line;
-    const column = position.character;
-
+  private rowAndColumnToCursor(row: number, column: number, text: string) {
     // iterate through text, incrementing rows when newlines are found, and counting columns when row is right
     let cursor = 0;
     let currentRow = 0;
@@ -186,7 +108,69 @@ export default class CommandHandler extends BaseCommandHandler {
 
       cursor++;
     }
+
     return cursor;
+  }
+
+  private async scrollToCursor(): Promise<any> {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    const cursor = this.activeEditor!.selection.start.line;
+    if (this.activeEditor!.visibleRanges.length > 0) {
+      const range = this.activeEditor!.visibleRanges[0];
+      const buffer = 5;
+      if (cursor < range.start.line + buffer || cursor > range.end.line - buffer) {
+        await vscode.commands.executeCommand("revealLine", {
+          lineNumber: cursor,
+          at: "center",
+        });
+      }
+    }
+  }
+
+  private setSourceAndCursor(before: string, source: string, row: number, column: number) {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    if (before != source) {
+      this.activeEditor.edit((edit) => {
+        const firstLine = this.activeEditor!.document.lineAt(0);
+        const lastLine = this.activeEditor!.document.lineAt(
+          this.activeEditor!.document.lineCount - 1
+        );
+
+        const textRange = new vscode.Range(
+          0,
+          firstLine.range.start.character,
+          this.activeEditor!.document.lineCount - 1,
+          lastLine.range.end.character
+        );
+
+        edit.replace(textRange, source);
+      });
+    }
+
+    this.activeEditor.selections = [new vscode.Selection(row, column, row, column)];
+  }
+
+  private async uiDelay(timeout: number = 100): Promise<void> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, timeout);
+    });
+  }
+
+  private updateActiveEditor() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      return;
+    }
+
+    this.activeEditor = editor;
   }
 
   async COMMAND_TYPE_CLOSE_TAB(_data: any): Promise<any> {
@@ -221,7 +205,7 @@ export default class CommandHandler extends BaseCommandHandler {
   async COMMAND_TYPE_DUPLICATE_TAB(_data: any): Promise<any> {}
 
   async COMMAND_TYPE_GET_EDITOR_STATE(data: any): Promise<any> {
-    let result = {
+    let result: any = {
       message: "editorState",
       data: {
         source: "",
@@ -229,10 +213,6 @@ export default class CommandHandler extends BaseCommandHandler {
         selectionStart: 0,
         selectionEnd: 0,
         filename: "",
-        files: this.openFileList.map((e: any) => e.path),
-        roots: vscode.workspace.workspaceFolders
-          ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
-          : [],
       },
     };
 
@@ -240,30 +220,55 @@ export default class CommandHandler extends BaseCommandHandler {
       return result;
     }
 
-    result.data.filename = this.filenameFromLanguage(
-      this.activeEditor!.document.fileName,
-      this.activeEditor!.document.languageId,
-      this.languageToExtension
-    );
+    let filename = this.activeEditor.document.fileName;
+    const language = this.activeEditor.document.languageId;
+    if (language && this.languageToExtension[language]) {
+      if (!this.languageToExtension[language].some((e: string) => filename.endsWith(`.${e}`))) {
+        filename = (filename || "file") + `.${this.languageToExtension[language][0]}`;
+      }
+    }
 
+    result.data.filename = filename;
     if (data.limited) {
       return result;
     }
 
-    const position = this.activeEditor!.selection.active;
-    const anchorPosition = this.activeEditor!.selection.anchor;
-    const text = this.activeEditor!.document.getText();
+    // filter out the longest root that's a prefix of the filename
+    const roots = vscode.workspace.workspaceFolders
+      ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
+      : [];
+    let files = [];
+    for (const file of this.openFileList.map((e: any) => e.path)) {
+      let prefixLength = 0;
+      for (const root of roots) {
+        if (file.startsWith(root) && prefixLength < file.length) {
+          prefixLength = root.length + 1;
+        }
+      }
 
-    const cursor = this.getCursorPosition(position, text);
-    const anchor = this.getCursorPosition(anchorPosition, text);
+      files.push(file.substring(prefixLength));
+    }
+    result.data.files = files;
+
+    const source = this.activeEditor!.document.getText();
+    const cursorPosition = this.activeEditor!.selection.active;
+    const anchorPosition = this.activeEditor!.selection.anchor;
+    const cursor = this.rowAndColumnToCursor(cursorPosition.line, cursorPosition.character, source);
+    const anchor = this.rowAndColumnToCursor(anchorPosition.line, anchorPosition.character, source);
     if (cursor != anchor) {
       result.data.selectionStart = cursor > anchor ? anchor : cursor;
       result.data.selectionEnd = cursor < anchor ? anchor : cursor;
     }
 
-    result.data.source = text;
-    result.data.cursor = this.getCursorPosition(position, text);
-
+    result.data.source = source;
+    result.data.cursor = this.rowAndColumnToCursor(
+      cursorPosition.line,
+      cursorPosition.character,
+      source
+    );
+    result.data.available = true;
+    result.data.canGetState = true;
+    result.data.canSetState = true;
     return result;
   }
 
@@ -306,6 +311,54 @@ export default class CommandHandler extends BaseCommandHandler {
 
   async COMMAND_TYPE_DEBUGGER_TOGGLE_BREAKPOINT(_data: any): Promise<any> {
     vscode.commands.executeCommand("editor.debug.action.toggleBreakpoint");
+  }
+
+  async COMMAND_TYPE_DIFF(data: any): Promise<any> {
+    await this.focus();
+    if (!this.activeEditor) {
+      return;
+    }
+
+    const before = this.activeEditor.document.getText() || "";
+    let [row, column] = diff.cursorToRowAndColumn(data.source, data.cursor);
+    if (!this.settings.getAnimations()) {
+      this.setSourceAndCursor(before, data.source, row, column);
+      await this.scrollToCursor();
+      return;
+    }
+
+    let ranges = diff.diff(before, data.source);
+    if (ranges.length == 0) {
+      ranges = [
+        new diff.DiffRange(
+          diff.DiffRangeType.Add,
+          diff.DiffHighlightType.Line,
+          new diff.DiffPoint(row, 0),
+          new diff.DiffPoint(row + 1, 0)
+        ),
+      ];
+    }
+
+    const addRanges = ranges.filter(
+      (e: diff.DiffRange) => e.diffRangeType == diff.DiffRangeType.Add
+    );
+
+    const deleteRanges = ranges.filter(
+      (e: diff.DiffRange) => e.diffRangeType == diff.DiffRangeType.Delete
+    );
+
+    const timeout = this.highlightRanges(deleteRanges);
+    return new Promise((resolve) => {
+      setTimeout(
+        async () => {
+          this.setSourceAndCursor(before, data.source, row, column);
+          this.highlightRanges(addRanges);
+          await this.scrollToCursor();
+          resolve(null);
+        },
+        deleteRanges.length > 0 ? timeout : 1
+      );
+    });
   }
 
   async COMMAND_TYPE_EVALUATE_IN_PLUGIN(data: any): Promise<any> {
@@ -376,7 +429,7 @@ export default class CommandHandler extends BaseCommandHandler {
       10
     );
 
-    return { message: "sendText", data: { text: `callback open` } };
+    return { message: "sendText", data: { text: "callback open" } };
   }
 
   async COMMAND_TYPE_PREVIOUS_TAB(_data: any): Promise<any> {
@@ -395,6 +448,18 @@ export default class CommandHandler extends BaseCommandHandler {
   async COMMAND_TYPE_SAVE(_data: any): Promise<any> {
     await this.focus();
     await vscode.commands.executeCommand("workbench.action.files.save");
+  }
+
+  async COMMAND_TYPE_SELECT(data: any): Promise<any> {
+    if (!this.activeEditor) {
+      return;
+    }
+
+    const [startRow, startColumn] = diff.cursorToRowAndColumn(data.source, data.cursor);
+    const [endRow, endColumn] = diff.cursorToRowAndColumn(data.source, data.cursorEnd);
+    this.activeEditor!.selections = [
+      new vscode.Selection(startRow, startColumn, endRow, endColumn),
+    ];
   }
 
   async COMMAND_TYPE_SPLIT(data: any): Promise<any> {
@@ -437,5 +502,11 @@ export default class CommandHandler extends BaseCommandHandler {
     await vscode.commands.executeCommand(`workspace.action.focus${split}Group`);
     await this.uiDelay();
     this.updateActiveEditor();
+  }
+
+  pollActiveEditor() {
+    setInterval(() => {
+      this.updateActiveEditor();
+    }, 1000);
   }
 }

@@ -1,4 +1,8 @@
+<img src="https://cdn.serenade.ai/img/logo-github.png" width="250px" alt="Serenade Logo" />
+
 # Serenade for Visual Studio Code
+
+To use Serenade for Visual Studio Code, you'll also need the Serenade app, which is freely available at [https://serenade.ai](https://serenade.ai).
 
 ## Code with voice
 
@@ -12,7 +16,7 @@ Learn more at [https://serenade.ai](https://serenade.ai).
 
 ## Installation
 
-To use Serenade with VS Code, you'll also need the Serenade app, available for download [here](https://serenade.ai/download).
+To use Serenade with VS Code, you'll also need the Serenade app, available for download [here](https://serenade.ai/download). Once Serenade is installed, restart VS Code, and you'll be able to start using voice commands.
 
 ## Getting Started
 

@@ -8,8 +8,4 @@ export function activate(_context: vscode.ExtensionContext) {
   app.start();
 }
 
-export function deactivate() {
-  if (app) {
-    app.destroy();
-  }
-}
+export function deactivate() {}

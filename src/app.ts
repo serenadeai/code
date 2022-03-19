@@ -1,8 +1,24 @@
 import * as vscode from "vscode";
 import CommandHandler from "./command-handler";
-import BaseApp from "./shared/app";
+import IPC from "./ipc";
+import Settings from "./settings";
 
-export default class App extends BaseApp {
+export default class App {
+  private commandHandler?: CommandHandler;
+  private ipc?: IPC;
+  private settings?: Settings;
+  private initialized: boolean = false;
+
+  private checkInstalled(): boolean {
+    const installed = this.settings!.getInstalled();
+    if (!installed) {
+      this.showInstallMessage();
+      return false;
+    }
+
+    return true;
+  }
+
   private installHtml(): string {
     return `
 <!doctype html>
@@ -67,30 +83,20 @@ document.querySelector('.download').addEventListener('click', e => {
     `;
   }
 
-  app(): string {
-    return "vscode";
-  }
-
-  createCommandHandler(): CommandHandler {
-    return new CommandHandler(this.settings!);
-  }
-
-  hideMessage() {}
-
   showInstallMessage() {
     const panel = vscode.window.createWebviewPanel(
       "serenade-install",
       "Serenade",
       vscode.ViewColumn.Two,
       {
-        enableScripts: true
+        enableScripts: true,
       }
     );
 
     panel.webview.html = this.installHtml();
     panel.webview.onDidReceiveMessage((message: any) => {
       if (message.type == "download") {
-        vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/request"));
+        vscode.env.openExternal(vscode.Uri.parse("https://serenade.ai/download"));
         panel.dispose();
       }
     });
@@ -101,15 +107,21 @@ document.querySelector('.download').addEventListener('click', e => {
       return;
     }
 
-    this.run();
-    (this.commandHandler! as CommandHandler).pollActiveEditor();
-    this.settings!.setPluginInstalled("vscode");
+    this.initialized = true;
+    this.settings = new Settings();
+    this.commandHandler = new CommandHandler(this.settings);
+    this.ipc = new IPC(this.commandHandler, "vscode");
+
+    this.ipc.start();
+    this.checkInstalled();
+    this.commandHandler.pollActiveEditor();
+    this.settings.setPluginInstalled("vscode");
 
     vscode.window.onDidChangeActiveTextEditor(() => {
       this.ipc!.sendActive();
     });
 
-    vscode.window.onDidChangeWindowState(state => {
+    vscode.window.onDidChangeWindowState((state) => {
       if (state.focused) {
         this.ipc!.sendActive();
       }
