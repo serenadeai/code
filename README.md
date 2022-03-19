@@ -2,6 +2,8 @@
 
 # Serenade for Visual Studio Code
 
+To use Serenade for Visual Studio Code, you'll also need the Serenade app, which is freely available at [https://serenade.ai](https://serenade.ai).
+
 ## Code with voice
 
 Serenade is the fastest and easiest way to write code with natural speech. Give your hands a break without missing a beat.
