@@ -61,9 +61,8 @@ export default class CommandHandler extends BaseCommandHandler {
     for (const range of ranges) {
       const decorations = steps.map((e) =>
         vscode.window.createTextEditorDecorationType({
-          backgroundColor: `rgba(${
-            range.diffRangeType == diff.DiffRangeType.Delete ? this.errorColor : this.successColor
-          }, 0.${e})`,
+          backgroundColor: `rgba(${range.diffRangeType == diff.DiffRangeType.Delete ? this.errorColor : this.successColor
+            }, 0.${e})`,
           isWholeLine: range.diffHighlightType == diff.DiffHighlightType.Line,
         })
       );
@@ -229,6 +228,8 @@ export default class CommandHandler extends BaseCommandHandler {
         selectionStart: 0,
         selectionEnd: 0,
         filename: "",
+        canGetState: false,
+        canSetState: false,
         files: this.openFileList.map((e: any) => e.path),
         roots: vscode.workspace.workspaceFolders
           ? vscode.workspace.workspaceFolders.map((e: any) => e.uri.path)
@@ -245,6 +246,8 @@ export default class CommandHandler extends BaseCommandHandler {
       this.activeEditor!.document.languageId,
       this.languageToExtension
     );
+    result.data.canGetState = true;
+    result.data.canSetState = true;
 
     if (data.limited) {
       return result;

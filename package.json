@@ -5,8 +5,10 @@
   "license": "MIT",
   "publisher": "serenade",
   "repository": "https://github.com/serenadeai/code",
-  "version": "1.4.10",
-  "extensionKind": "ui",
+  "version": "1.4.11",
+  "extensionKind": [
+    "ui"
+  ],
   "icon": "icon.png",
   "engines": {
     "vscode": "^1.44.0"
@@ -45,7 +47,7 @@
     "babel-loader": "^8.0.6",
     "css-loader": "^3.0.0",
     "mini-css-extract-plugin": "^0.7.0",
-    "node-sass": "^4.12.0",
+    "node-sass": "^6.0.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "ts-loader": "^6.0.4",
