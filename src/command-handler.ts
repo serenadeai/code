@@ -130,13 +130,13 @@ export default class CommandHandler {
     }
   }
 
-  private setSourceAndCursor(before: string, source: string, row: number, column: number) {
+  private async setSourceAndCursor(before: string, source: string, row: number, column: number): Promise<void> {
     if (!this.activeEditor) {
       return;
     }
 
     if (before != source) {
-      this.activeEditor.edit((edit) => {
+      await this.activeEditor.edit((edit) => {
         const firstLine = this.activeEditor!.document.lineAt(0);
         const lastLine = this.activeEditor!.document.lineAt(
           this.activeEditor!.document.lineCount - 1
@@ -322,7 +322,7 @@ export default class CommandHandler {
     const before = this.activeEditor.document.getText() || "";
     let [row, column] = diff.cursorToRowAndColumn(data.source, data.cursor);
     if (!this.settings.getAnimations()) {
-      this.setSourceAndCursor(before, data.source, row, column);
+      await this.setSourceAndCursor(before, data.source, row, column);
       await this.scrollToCursor();
       return;
     }
@@ -351,7 +351,7 @@ export default class CommandHandler {
     return new Promise((resolve) => {
       setTimeout(
         async () => {
-          this.setSourceAndCursor(before, data.source, row, column);
+          await this.setSourceAndCursor(before, data.source, row, column);
           this.highlightRanges(addRanges);
           await this.scrollToCursor();
           resolve(null);
