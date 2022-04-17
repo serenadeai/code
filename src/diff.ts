@@ -1,4 +1,5 @@
 const DiffMatchPatch = require("./diff_match_patch");
+const { diffLines } = require("diff");
 
 export enum DiffRangeType {
   Add,
@@ -93,6 +94,62 @@ export function cursorToRowAndColumn(source: string, cursor: number): number[] {
   }
 
   return [row, column];
+}
+
+/**
+ * Computes the differences between two strings in a way that vscode
+ * can then use to smartly insert and remove. This prevents the UI from flashing
+ * in certain languages.
+ * 
+ * @param before The string before the change.
+ * @param after The string after the change.
+ * @returns An array of differences.
+ */
+export function codeDiff(before: string, after: string): any[] {
+  const differences = diffLines(before, after);
+
+  let changes = [];
+  let row = 0;
+  let column = 0;
+
+  for (const d of differences) {
+    const text = d.value;
+
+    if (d.added) {
+      changes.push({
+        insertion: true,
+        column,
+        row,
+        text
+      })
+    }
+
+    let old_row = row;
+    let old_column = column;
+
+    for (const c of text) {
+      column++;
+      if (c == '\n') {
+        row++;
+        column = 0;
+      }
+    }
+
+    if (d.removed) {
+      changes.push({
+        insertion: false,
+        r1: old_row,
+        r2: row,
+        c1: old_column,
+        c2: column
+      })
+
+      row = old_row;
+      column = old_column;
+    }
+  }
+
+  return changes;
 }
 
 export function diff(before: string, after: string): DiffRange[] {
