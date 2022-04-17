@@ -129,7 +129,7 @@ export default class CommandHandler {
       }
     }
   }
-
+  
   private async setSourceAndCursor(before: string, source: string, row: number, column: number): Promise<void> {
     if (!this.activeEditor) {
       return;
@@ -137,19 +137,13 @@ export default class CommandHandler {
 
     if (before != source) {
       await this.activeEditor.edit((edit) => {
-        const firstLine = this.activeEditor!.document.lineAt(0);
-        const lastLine = this.activeEditor!.document.lineAt(
-          this.activeEditor!.document.lineCount - 1
-        );
-
-        const textRange = new vscode.Range(
-          0,
-          firstLine.range.start.character,
-          this.activeEditor!.document.lineCount - 1,
-          lastLine.range.end.character
-        );
-
-        edit.replace(textRange, source);
+        for (const change of diff.codeDiff(before, source)) {
+          if (change.insertion) {
+            edit.insert(new vscode.Position(change.row , change.column), change.text)
+          } else {
+            edit.delete(new vscode.Range(change.r1, change.c1, change.r2, change.c2))
+          }
+        }
       });
     }
 
