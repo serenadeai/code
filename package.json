@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "bufferutil": "^4.0.1",
+    "diff": "^5.0.0",
     "gitignore-globs": "^0.1.1",
     "mkdirp": "0.5.1",
     "utf-8-validate": "^5.0.2",
