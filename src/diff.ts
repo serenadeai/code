@@ -126,6 +126,15 @@ export function codeDiff(before: string, after: string): any {
     if (before[i] !== after[i]) {
       break;
     }
+
+    // Compute the row and column of the start of the change
+    if (before[i] === "\n") {
+      start_row += 1;
+      start_column = 0;
+    } else {
+      start_column += 1;
+    }
+
     start_index = i + 1;
   }
 
@@ -135,16 +144,6 @@ export function codeDiff(before: string, after: string): any {
       break;
     }
     stop_index = i;
-  }
-
-  // Compute the row and column of the start of the change
-  for (let i = 0; i < start_index; i++) {
-    if (before[i] === "\n") {
-      start_row += 1;
-      start_column = 0;
-    } else {
-      start_column += 1;
-    }
   }
 
   // update stop_row and stop_column to match start_row and start_column
