@@ -97,7 +97,7 @@ export function cursorToRowAndColumn(source: string, cursor: number): number[] {
 
 /**
  * Computes the differences between two strings in a way that vscode
- * can then use "replace" only the modified text.
+ * can then "replace" only the modified text.
  * 
  * @param before The string before the change.
  * @param after The string after the change.
