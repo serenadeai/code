@@ -129,7 +129,7 @@ export default class CommandHandler {
       }
     }
   }
-  
+
   private async setSourceAndCursor(before: string, source: string, row: number, column: number): Promise<void> {
     if (!this.activeEditor) {
       return;
@@ -151,7 +151,6 @@ export default class CommandHandler {
 
     this.activeEditor.selections = [new vscode.Selection(row, column, row, column)];
   }
-
 
   private async uiDelay(timeout: number = 100): Promise<void> {
     return new Promise((resolve) => {
