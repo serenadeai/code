@@ -97,58 +97,84 @@ export function cursorToRowAndColumn(source: string, cursor: number): number[] {
 
 /**
  * Computes the differences between two strings in a way that vscode
- * can then use to smartly insert and remove. This prevents the UI from flashing
- * in certain languages.
+ * can then use "replace" only the modified text.
  * 
  * @param before The string before the change.
  * @param after The string after the change.
- * @returns An array of differences.
+ * 
+ * @returns An object with the following properties:
+ * 
+ * - `start_row`: The row of the start of the change.
+ * - `start_column`: The column of the start of the change.
+ * - `stop_row`: The row of the end of the change.
+ * - `stop_column`: The column of the end of the change.
+ * - `insertion_text`: The text to insert.
  */
-export function codeDiff(before: string, after: string): any[] {
-  const differences = diffLines(before, after);
+export function codeDiff(before: string, after: string): any {
+  let start_row = 0;
+  let start_column = 0;
+  let stop_row = 0;
+  let stop_column = 0;
 
-  let changes = [];
-  let row = 0;
-  let column = 0;
+  let insertion_text = "";
 
-  for (const d of differences) {
-    const text = d.value;
+  let start_index = 0;
+  let stop_index = 0;
 
-    if (d.added) {
-      changes.push({
-        insertion: true,
-        column,
-        row,
-        text
-      })
+  // Find the longest shared prefix
+  for (let i = 0; i < Math.min(before.length, after.length); i++) {
+    if (before[i] !== after[i]) {
+      break;
     }
+    start_index = i + 1;
+  }
 
-    let old_row = row;
-    let old_column = column;
-
-    for (const c of text) {
-      column++;
-      if (c == '\n') {
-        row++;
-        column = 0;
-      }
+  // Find the longest shared postfix
+  for (let i = 1; i <= Math.min(before.length - start_index, after.length - start_index); i++) {
+    if (before[before.length - i] !== after[after.length - i]) {
+      break;
     }
+    stop_index = i;
+  }
 
-    if (d.removed) {
-      changes.push({
-        insertion: false,
-        r1: old_row,
-        r2: row,
-        c1: old_column,
-        c2: column
-      })
-
-      row = old_row;
-      column = old_column;
+  // Compute the row and column of the start of the change
+  for (let i = 0; i < start_index; i++) {
+    if (before[i] === "\n") {
+      start_row += 1;
+      start_column = 0;
+    } else {
+      start_column += 1;
     }
   }
 
-  return changes;
+  // update stop_row and stop_column to match start_row and start_column
+  stop_row = start_row;
+  stop_column = start_column;
+
+  // Compute the row and column of the end of the change. During insertions we 
+  // will iterate over nothing and stop will be the same as start. During a 
+  // deletion or change we will iterate over the code that is to be modified.
+  // This places stop at the end of the modification, "selecting" the text to 
+  // be replaced.
+  for (let i = start_index; i < before.length - stop_index; i++) {
+    if (before[i] === "\n") {
+      stop_row += 1;
+      stop_column = 0;
+    } else {
+      stop_column += 1;
+    }
+  }
+
+  // Compute the insertion text
+  insertion_text = after.substring(start_index, after.length - stop_index);
+
+  return {
+    start_row,
+    start_column,
+    stop_row,
+    stop_column,
+    insertion_text
+  };
 }
 
 export function diff(before: string, after: string): DiffRange[] {
