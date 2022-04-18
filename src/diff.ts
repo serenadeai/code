@@ -1,5 +1,4 @@
 const DiffMatchPatch = require("./diff_match_patch");
-const { diffLines } = require("diff");
 
 export enum DiffRangeType {
   Add,
