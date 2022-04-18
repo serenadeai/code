@@ -137,18 +137,21 @@ export default class CommandHandler {
 
     if (before != source) {
       await this.activeEditor.edit((edit) => {
-        for (const change of diff.codeDiff(before, source)) {
-          if (change.insertion) {
-            edit.insert(new vscode.Position(change.row , change.column), change.text)
-          } else {
-            edit.delete(new vscode.Range(change.r1, change.c1, change.r2, change.c2))
-          }
-        }
+        const {
+          start_row,
+          start_column,
+          stop_row,
+          stop_column,
+          insertion_text
+        } = diff.codeDiff(before, source);
+
+        edit.replace(new vscode.Range(start_row, start_column, stop_row, stop_column), insertion_text)
       });
     }
 
     this.activeEditor.selections = [new vscode.Selection(row, column, row, column)];
   }
+
 
   private async uiDelay(timeout: number = 100): Promise<void> {
     return new Promise((resolve) => {
