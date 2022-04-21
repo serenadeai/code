@@ -1,4 +1,3 @@
-import { cursorTo } from "readline";
 import * as vscode from "vscode";
 import * as diff from "./diff";
 import Settings from "./settings";
