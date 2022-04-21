@@ -1,3 +1,4 @@
+import { cursorTo } from "readline";
 import * as vscode from "vscode";
 import * as diff from "./diff";
 import Settings from "./settings";
@@ -130,26 +131,43 @@ export default class CommandHandler {
     }
   }
 
-  private async setSourceAndCursor(before: string, source: string, row: number, column: number): Promise<void> {
+  private async setSourceAndCursor(
+    before: string,
+    source: string,
+    row: number,
+    column: number
+  ): Promise<void> {
     if (!this.activeEditor) {
       return;
     }
 
     if (before != source) {
       await this.activeEditor.edit((edit) => {
-        const firstLine = this.activeEditor!.document.lineAt(0);
-        const lastLine = this.activeEditor!.document.lineAt(
-          this.activeEditor!.document.lineCount - 1
+        // Compute the shared prefix and postfix, so we can swap out the range between them and not disrupt
+        // the rust analyzer as much.
+        let startIndex = 0;
+        while (
+          startIndex < before.length &&
+          startIndex < source.length &&
+          before[startIndex] != source[startIndex]
+        ) {
+          startIndex++;
+        }
+        let stopOffset = 0;
+        while (
+          before.length - stopOffset - 1 >= 0 &&
+          source.length - stopOffset - 1 >= 0 &&
+          before[before.length - stopOffset - 1] != source[source.length - stopOffset - 1]
+        ) {
+          stopOffset++;
+        }
+        const [startLine, startCharacter] = diff.cursorToRowAndColumn(before, startIndex);
+        const [stopLine, stopCharacter] = diff.cursorToRowAndColumn(
+          before,
+          before.length - stopOffset
         );
-
-        const textRange = new vscode.Range(
-          0,
-          firstLine.range.start.character,
-          this.activeEditor!.document.lineCount - 1,
-          lastLine.range.end.character
-        );
-
-        edit.replace(textRange, source);
+        const textRange = new vscode.Range(startLine, startCharacter, stopLine, stopCharacter);
+        edit.replace(textRange, source.substring(startIndex, source.length - stopOffset));
       });
     }
 
