@@ -86,7 +86,12 @@ export function cursorToRowAndColumn(source: string, cursor: number): number[] {
   let column = 0;
   for (let i = 0; i < cursor; i++) {
     column++;
-    if (source[i] == "\n") {
+    // Handle CRLF or LF
+    if (source[i] == "\r" && i + 1 < source.length && source[i + 1] == "\n") {
+      row += 1;
+      column = 0;
+      i++;
+    } else if (source[i] == "\n") {
       row++;
       column = 0;
     }
