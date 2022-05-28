@@ -148,23 +148,29 @@ export default class CommandHandler {
         while (
           startIndex < before.length &&
           startIndex < source.length &&
-          before[startIndex] != source[startIndex]
+          before[startIndex] == source[startIndex]
         ) {
           startIndex++;
         }
         let stopOffset = 0;
         while (
-          before.length - stopOffset - 1 >= 0 &&
-          source.length - stopOffset - 1 >= 0 &&
-          before[before.length - stopOffset - 1] != source[source.length - stopOffset - 1]
+          before.length - stopOffset - 1 >= startIndex &&
+          source.length - stopOffset - 1 >= startIndex &&
+          before[before.length - stopOffset - 1] == source[source.length - stopOffset - 1]
         ) {
           stopOffset++;
+        }
+        // don't split crlf when we strip them in serenade.
+        if (before.length - stopOffset - 1 >= 0 &&
+            before[before.length - stopOffset - 1] == "\r") {
+          stopOffset--;
         }
         const [startLine, startCharacter] = diff.cursorToRowAndColumn(before, startIndex);
         const [stopLine, stopCharacter] = diff.cursorToRowAndColumn(
           before,
           before.length - stopOffset
         );
+
         const textRange = new vscode.Range(startLine, startCharacter, stopLine, stopCharacter);
         edit.replace(textRange, source.substring(startIndex, source.length - stopOffset));
       });
