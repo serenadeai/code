@@ -9,7 +9,7 @@ export default class Settings {
   private userDefaults: any = {};
 
   private createIfNotExists(file: string) {
-    mkdirp.sync(this.path());
+    mkdirp.mkdirpSync(this.path());
     if (!fs.existsSync(file)) {
       fs.closeSync(fs.openSync(file, "w"));
     }
