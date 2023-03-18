@@ -4,7 +4,7 @@
   "displayName": "Serenade-beta",
   "license": "MIT",
   "publisher": "neumaneuma",
-  "repository": "https://github.com/serenadeai/code",
+  "repository": "https://github.com/neumaneuma/code",
   "version": "1.5.4",
   "extensionKind": [
     "ui"
