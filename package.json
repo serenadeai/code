@@ -1,17 +1,17 @@
 {
   "name": "serenade-beta",
-  "description": "Forked beta version of https://marketplace.visualstudio.com/items?itemName=serenade.serenade in order to test updating the dependencies before opening a PR",
-  "displayName": "Serenade-beta",
+  "description": "Forked community version of https://marketplace.visualstudio.com/items?itemName=serenade.serenade that contains updated dependencies, and stays on top of dependendabot alerts.",
+  "displayName": "Serenade Community",
   "license": "MIT",
   "publisher": "neumaneuma",
   "repository": "https://github.com/neumaneuma/code",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "extensionKind": [
     "ui"
   ],
   "icon": "icon.png",
   "engines": {
-    "vscode": "^1.44.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Other"
@@ -29,19 +29,18 @@
   "dependencies": {
     "bufferutil": "^4.0.1",
     "gitignore-globs": "^0.1.1",
-    "mkdirp": "^2.1.5",
-    "utf-8-validate": "^5.0.2",
-    "uuid": "^7.0.2",
-    "ws": "^7.4.6"
+    "mkdirp": "^3.0.1",
+    "utf-8-validate": "^6.0.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
-    "@types/node": "^10.14.12",
-    "@types/uuid": "^7.0.2",
-    "@types/vscode": "^1.44.0",
-    "@types/ws": "^7.2.3",
-    "ts-loader": "^9.2.6",
-    "typescript": "^4.6.2",
-    "webpack": "^5.76.2",
-    "webpack-cli": "^5.0.1"
+    "@types/uuid": "^9.0.2",
+    "@types/vscode": "^1.75.0",
+    "@types/ws": "^8.5.5",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.1.6",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   }
 }

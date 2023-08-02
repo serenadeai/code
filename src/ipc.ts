@@ -76,11 +76,13 @@ export default class IPC {
           this.onOpen();
         });
 
-        this.websocket.on("close", () => {
+        this.websocket.on("close", (_code, _data) => {
           this.onClose();
         });
 
-        this.websocket.on("message", (message) => {
+        this.websocket.on("message", (data: Buffer, isBinary: boolean) => {
+          const message = isBinary ? data : data.toString();
+
           this.onMessage(message);
         });
       }
